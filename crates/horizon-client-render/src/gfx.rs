@@ -1658,6 +1658,8 @@ pub struct Renderer {
     lod_leaving: Vec<(SectionKey, std::time::Instant)>,
     /// Finished tile meshes `upload_lods` has yet to upload.
     lod_pending: Option<lod::Pending>,
+    /// Tiles waiting to be shown, fading out, or holding a replacement mesh.
+    lod_transitions: std::collections::BTreeSet<crate::lod::TileKey>,
     detail_columns: FxHashMap<(i32, i32), SectionMask>,
     /// Bumped whenever a column becomes or stops being complete.
     detail_revision: u64,
@@ -4554,6 +4556,7 @@ impl Renderer {
             lod_retiring: Default::default(),
             lod_leaving: Vec::new(),
             lod_pending: None,
+            lod_transitions: Default::default(),
             detail_columns: Default::default(),
             detail_revision: 0,
             upload_retries: UploadRetries::default(),
@@ -5798,6 +5801,7 @@ impl Renderer {
         self.sections.clear();
         self.ray_clear();
         self.lods.clear();
+        self.lod_transitions.clear();
         self.lod_cutout.clear();
         self.lod_retiring.clear();
         self.lod_leaving.clear();

@@ -238,8 +238,12 @@ impl Renderer {
             }
             None => (None, None),
         };
+        self.lod_transitions.remove(&key);
         match Bounds::mesh(mesh).zip(self.upload_mesh(mesh)) {
             Some((bounds, mesh)) => {
+                if shown.is_none() || previous.is_some() {
+                    self.lod_transitions.insert(key);
+                }
                 let cull_slot = old_slot.unwrap_or_else(|| {
                     self.lod_cull_free.pop().unwrap_or_else(|| {
                         self.lod_cull_next += 1;
@@ -276,6 +280,7 @@ impl Renderer {
     }
 
     pub fn remove_lod(&mut self, key: TileKey) {
+        self.lod_transitions.remove(&key);
         if let Some(copies) = &mut self.capture_copies {
             copies.forget_tile(key);
         }
@@ -290,6 +295,7 @@ impl Renderer {
             copies.clear_tiles();
         }
         self.lod_pending = None;
+        self.lod_transitions.clear();
         for (_, tile) in std::mem::take(&mut self.lods) {
             self.release_tile(tile);
         }
@@ -338,42 +344,43 @@ impl Renderer {
             self.shrink_gate.wait(start, super::SHRINK_SETTLE);
         }
         self.release_left(start);
-        let faded: Vec<_> = self
-            .lods
-            .iter()
-            .filter(|(_, tile)| tile.dying.is_some_and(|d| start - d >= FADE))
-            .map(|(&key, _)| key)
-            .collect();
+        let mut faded = Vec::new();
+        let mut stood_in = Vec::new();
+        self.lod_transitions.retain(|&key| {
+            let tile = self.lods.get_mut(&key).expect("transitioning tile");
+            if tile.dying.is_some_and(|since| start - since >= FADE) {
+                faded.push(key);
+                return false;
+            }
+            if let Some((_, Some(since))) = tile.previous.as_deref()
+                && start - *since >= FADE
+            {
+                let (previous, _) = *tile.previous.take().expect("stand-in mesh");
+                stood_in.push(previous);
+            }
+            tile.shown.is_none() || tile.dying.is_some() || tile.previous.is_some()
+        });
         for key in faded {
             self.remove_lod(key);
         }
-        let stood_in: Vec<_> = self
-            .lods
-            .values_mut()
-            .filter_map(|tile| match tile.previous.as_deref() {
-                Some((_, Some(since))) if start - *since >= FADE => {
-                    tile.previous.take().map(|p| *p)
-                }
-                _ => None,
-            })
-            .collect();
-        for (previous, _) in stood_in {
+        for previous in stood_in {
             self.release_mesh(previous);
         }
+        let Some(pending) = &self.lod_pending else {
+            return;
+        };
         // The columns near chunks take in this job, and the tiles holding the
         // job's new finer ones: a tile meshed again around them keeps its
         // old mesh until they are in, so no hole shows through them.
         let mut around_new = FxHashSet::default();
-        let new = self
-            .lod_pending
-            .iter()
-            .flat_map(|pending| pending.meshes.keys())
+        let new = pending
+            .meshes
+            .keys()
             .filter(|key| !self.lods.contains_key(key))
             .chain(
-                self.lods
+                self.lod_transitions
                     .iter()
-                    .filter(|(_, tile)| tile.shown.is_none())
-                    .map(|(key, _)| key),
+                    .filter(|key| self.lods[key].shown.is_none()),
             );
         for &key in new {
             let mut key = key;
@@ -427,10 +434,10 @@ impl Renderer {
                 // `kept` holds the new tiles and the near chunks' columns
                 // (level 0), `above` their ancestors.
                 let mut kept: FxHashSet<TileKey> = self
-                    .lods
+                    .lod_transitions
                     .iter()
-                    .filter(|(_, tile)| tile.shown.is_none())
-                    .map(|(&key, _)| key)
+                    .copied()
+                    .filter(|key| self.lods[key].shown.is_none())
                     .collect();
                 let cut = pending.cutout.as_ref().unwrap_or(&self.lod_cutout);
                 kept.extend(cut.iter().map(|&(x, z)| TileKey { x, z, level: 0 }));
@@ -451,14 +458,16 @@ impl Renderer {
                         })
                 };
                 let whole = start.checked_sub(FADE).unwrap_or(start);
-                for (&key, tile) in &mut self.lods {
+                self.lod_transitions.retain(|&key| {
+                    let tile = self.lods.get_mut(&key).expect("transitioning tile");
                     if tile.shown.is_none() {
                         tile.shown = Some(if over_replaced(key) { start } else { whole });
                     }
                     if let Some((_, since)) = tile.previous.as_deref_mut() {
                         since.get_or_insert(start);
                     }
-                }
+                    tile.dying.is_some() || tile.previous.is_some()
+                });
                 for key in pending.removed {
                     let alone = alone(key);
                     if let Some(tile) = self.lods.get_mut(&key)
@@ -466,6 +475,7 @@ impl Renderer {
                     {
                         tile.dying = Some(start);
                         tile.alone = alone;
+                        self.lod_transitions.insert(key);
                     }
                 }
                 if let Some(cutout) = pending.cutout {
