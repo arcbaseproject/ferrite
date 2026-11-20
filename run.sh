@@ -2,6 +2,8 @@
 # Run Ferrite from this checkout. Pass --launcher for the separate desktop launcher.
 set -e
 cd "$(dirname "$0")"
+# Ferrite's own Azure app (docs/microsoft-account.md); client IDs are public.
+export HORIZON_MSA_CLIENT_ID="${HORIZON_MSA_CLIENT_ID:-8c1ecd76-dc3f-4cdb-a1b1-1c15f1a782f6}"
 if [ "${1:-}" = "--launcher" ]; then
     shift
     cd launcher

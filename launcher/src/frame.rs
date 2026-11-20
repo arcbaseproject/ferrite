@@ -926,7 +926,8 @@ impl Launcher {
                     })
                     .when(tight, |d| d.tooltip(ui::tip(tr("Sign in with Microsoft"))))
                     .on_click(cx.listener(|this, _: &ClickEvent, _, cx| {
-                        this.start_sign_in();
+                        // On the owner screen, where the code shows: the top bar has no room for it.
+                        this.sign_in_to_play();
                         cx.notify();
                     })),
                 &t,
