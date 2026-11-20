@@ -547,7 +547,7 @@ impl Settings {
             shader_options: None,
             running_pack: None,
             auto_jump: f.bool("autoJump"),
-            language: f.string("lang"),
+            language: crate::lang::supported_code(&f.string("lang")).to_owned(),
             force_unicode: f.bool("forceUnicodeFont"),
             japanese_glyphs: f.bool("japaneseGlyphVariants"),
             chat_visibility: f.int("chatVisibility") as u8,

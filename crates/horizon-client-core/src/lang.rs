@@ -34,6 +34,18 @@ pub struct Language {
 }
 pub const DEFAULT: &str = "en_us";
 
+fn novelty_locale(code: &str) -> bool {
+    matches!(
+        code,
+        "en_pt" | "en_ud" | "enp" | "enws" | "lol_us" | "qya_aa" | "tlh_aa"
+    )
+}
+
+/// Resolve a saved language selection, including locales removed from the game.
+pub fn supported_code(code: &str) -> &str {
+    if novelty_locale(code) { DEFAULT } else { code }
+}
+
 static CURRENT: RwLock<Option<Arc<Language>>> = RwLock::new(None);
 /// A language that only the calling thread sees, and the keys it was asked for and did not have
 /// (`scoped`).
@@ -517,6 +529,7 @@ impl Language {
         code: &str,
         crate_files: &[&[(&str, &str)]],
     ) -> Self {
+        let code = supported_code(code);
         let mut map = HashMap::new();
         let mut codes = vec![DEFAULT];
         if code != DEFAULT {
@@ -597,6 +610,9 @@ pub fn available(sources: &[&dyn ResourceSource]) -> Vec<LanguageInfo> {
                 continue;
             };
             for (code, info) in value["language"].as_object().into_iter().flatten() {
+                if novelty_locale(code) {
+                    continue;
+                }
                 // Only languages whose file exists somewhere are selectable.
                 let file = format!("assets/minecraft/lang/{code}.json");
                 if code != DEFAULT && !sources.iter().any(|s| s.exists(&file)) {
@@ -1195,6 +1211,44 @@ mod tests {
             ["en_us", "fr_fr"]
         );
         assert_eq!(langs[1].label(), "Français (France)");
+    }
+
+    #[test]
+    fn novelty_locales_are_hidden_and_old_selections_load_english() {
+        let removed = [
+            "en_pt", "en_ud", "enp", "enws", "lol_us", "qya_aa", "tlh_aa",
+        ];
+        let retained = ["eo_uy", "fr_ca", "got_de"];
+        let mut files = HashMap::new();
+        let mut metadata = serde_json::Map::new();
+        for code in removed.into_iter().chain(retained) {
+            metadata.insert(code.into(), serde_json::json!({ "name": code }));
+            files.insert(
+                format!("assets/minecraft/lang/{code}.json"),
+                br#"{"sample":"Selected"}"#.to_vec(),
+            );
+        }
+        files.insert(
+            "assets/pack.mcmeta".into(),
+            serde_json::to_vec(&serde_json::json!({ "language": metadata })).unwrap(),
+        );
+        files.insert(
+            "assets/minecraft/lang/en_us.json".into(),
+            br#"{"sample":"English"}"#.to_vec(),
+        );
+        let source = Mem(files);
+        let sources: [&dyn ResourceSource; 1] = [&source];
+
+        let listed: Vec<_> = available(&sources)
+            .into_iter()
+            .map(|info| info.code)
+            .collect();
+        assert_eq!(listed, ["en_us", "eo_uy", "fr_ca", "got_de"]);
+        for code in removed {
+            let lang = Language::load(&sources, code);
+            assert_eq!(lang.code, DEFAULT);
+            assert_eq!(lang.get("sample"), Some("English"));
+        }
     }
 
     #[test]
