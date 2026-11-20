@@ -1,5 +1,8 @@
 # Security
 
+> This page is upstream Horizon's and describes Horizon's own pipeline. For Ferrite, see
+> [SECURITY.md](../SECURITY.md).
+
 How Horizon keeps its code and its downloads safe while most of the work is done by AI agents and releases go out
 by themselves, including when Ludovic isn't at his computer. In plain words: what someone could have done before,
 what stops them now, and what still needs Ludovic.
