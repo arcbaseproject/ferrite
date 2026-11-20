@@ -285,9 +285,6 @@ impl Game<'_> {
                 }
             });
         }
-        for chunk in &unloaded {
-            self.world.modified.unloaded(&(chunk.x, chunk.z));
-        }
         horizon_client::spans::time("unload_entities", || self.unload_entities(&unloaded));
         if !unloaded.is_empty() {
             let _span = horizon_client::spans::guard("unload_block_entities");
@@ -344,6 +341,8 @@ impl Game<'_> {
                 });
                 self.streaming.free(uploads);
             } else {
+                let started = Instant::now();
+                let upload_span = horizon_client::spans::guard("upload_queue");
                 // Horizon's chunk-update and upload budgets: the nearest
                 // sections go first, the rest wait for later frames; a newer
                 // mesh of a waiting section replaces it, and sections of
@@ -353,12 +352,15 @@ impl Game<'_> {
                     uploads.iter().map(|(k, _)| *k).collect();
                 let chunks = &self.world.chunks;
                 let loaded = |k: &(i32, i32, i32)| chunks.contains_key(&(k.0, k.2));
-                let mut spent: Vec<_> = pending
-                    .extract_if(.., |(k, _)| fresh.contains(k) || !loaded(k))
-                    .collect();
+                let mut spent = Vec::new();
+                if !fresh.is_empty() || !unloaded.is_empty() {
+                    spent.extend(pending.extract_if(.., |(k, _)| fresh.contains(k) || !loaded(k)));
+                }
+                let mut added = false;
                 for upload in uploads {
                     if loaded(&upload.0) {
                         pending.push(upload);
+                        added = true;
                     } else {
                         spent.push(upload);
                     }
@@ -370,10 +372,14 @@ impl Game<'_> {
                     .player
                     .as_ref()
                     .map_or(4, |p| ((p.position.y - bottom) / 16.0).floor() as i32);
-                let far = |k: &(i32, i32, i32)| {
-                    (k.0 - centre.0).pow(2) + (k.1 - cam_y).pow(2) + (k.2 - centre.1).pow(2)
-                };
-                pending.sort_unstable_by_key(|(k, _)| std::cmp::Reverse(far(k)));
+                let at = (centre.0, cam_y, centre.1);
+                if !pending.is_empty() && (added || self.pending_upload_center != Some(at)) {
+                    let far = |k: &(i32, i32, i32)| {
+                        (k.0 - at.0).pow(2) + (k.1 - at.1).pow(2) + (k.2 - at.2).pow(2)
+                    };
+                    pending.sort_unstable_by_key(|(k, _)| std::cmp::Reverse(far(k)));
+                    self.pending_upload_center = Some(at);
+                }
                 let (limit, budget) = if budgeted {
                     (
                         g.chunk_updates as usize,
@@ -388,8 +394,6 @@ impl Game<'_> {
                 // time, more with a backlog, at most 2 ms; at least one goes): a burst
                 // of finished meshes spreads over frames, nearest first.
                 let auto = (!budgeted).then(|| self.upload_pace.budget(pending.len(), arriving));
-                let started = Instant::now();
-                let upload_span = horizon_client::spans::guard("upload_queue");
                 while let Some((_, mesh)) = pending.last() {
                     if auto.is_some_and(|time| count > 0 && started.elapsed() >= time) {
                         break;
