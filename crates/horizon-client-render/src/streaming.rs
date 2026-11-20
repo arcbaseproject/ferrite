@@ -1880,10 +1880,9 @@ impl Streaming {
         }
         hz_laps.lap("st_results");
         self.free(resume.stale);
-        let far = if resume.sweep {
-            plan_unloads(world, |x, z| {
-                !self.remote && self.ranges().unloaded(x, z, self.decorates)
-            })
+        let far = if resume.sweep && !self.remote {
+            let ranges = self.ranges();
+            plan_unloads(world, |x, z| ranges.unloaded(x, z, self.decorates))
         } else {
             Vec::new()
         };
