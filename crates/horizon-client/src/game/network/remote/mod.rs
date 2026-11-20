@@ -787,10 +787,10 @@ pub(super) struct Remote {
 /// time the player crossed a chunk border at 32 chunks; they decode on the
 /// chunk decoder's thread now, and the frame only inserts them.
 const CHUNK_PACKETS_PER_FRAME: Duration = Duration::from_millis(1);
-/// Events that have waited this long are all handled in the next frame,
-/// whatever inserting their columns costs, up to a column still decoding:
-/// the packets after a slow machine's chunks don't wait on its frames.
+/// A backlog this old gets a larger budget to reduce the wait for ordered
+/// packets behind chunks while still spreading chunk work over frames.
 const BACKLOG_LIMIT: Duration = Duration::from_millis(50);
+const OVERDUE_CHUNK_PACKETS_PER_FRAME: Duration = Duration::from_millis(2);
 /// The open menu name of a server's horse inventory, then its chest's
 /// columns (the packet names no `MenuType`).
 const MOUNT_MENU: &str = "horizon:mount";
@@ -2154,9 +2154,9 @@ impl Game<'_> {
     /// Process what the network thread received (once per frame, like the
     /// client's packet processor), in order. Chunk packets get
     /// `CHUNK_PACKETS_PER_FRAME`: once a frame has spent it, the events from
-    /// the next chunk packet on wait for the next frame, unless they have
-    /// already waited `BACKLOG_LIMIT`. A chunk packet still decoding holds
-    /// back what follows it.
+    /// the next chunk packet on wait for the next frame. Backlogs older than
+    /// `BACKLOG_LIMIT` get `OVERDUE_CHUNK_PACKETS_PER_FRAME`. A chunk packet
+    /// still decoding holds back what follows it.
     pub(super) fn poll_remote(&mut self) -> Result<()> {
         let polled = self.poll_remote_events();
         // The block events and block changes of a piston clock start and end

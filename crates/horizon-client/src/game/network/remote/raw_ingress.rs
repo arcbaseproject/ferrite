@@ -30,6 +30,11 @@ impl Game<'_> {
         let overdue = r
             .backlog_since
             .is_some_and(|since| since.elapsed() >= BACKLOG_LIMIT);
+        let chunk_budget = if overdue {
+            OVERDUE_CHUNK_PACKETS_PER_FRAME
+        } else {
+            CHUNK_PACKETS_PER_FRAME
+        };
         let mut chunks = Duration::ZERO;
         // A run of ForgetLevelChunk (thousands when the server's view moves far: a
         // teleport at 32 chunks) is forgotten at once, before whatever follows it.
@@ -48,8 +53,14 @@ impl Game<'_> {
                 self.forget_remote_columns(&mut forgotten, true)
             });
             forgotten_credits.clear();
-            let chunk = matches!(item, Received::Chunk(_, _));
-            if chunk && !overdue && chunks >= CHUNK_PACKETS_PER_FRAME {
+            let chunk = match &item {
+                Received::Chunk(_, _) => true,
+                Received::Event(Event::Packet(packet), _) => {
+                    matches!(**packet, C::LevelChunkWithLight(_))
+                }
+                _ => false,
+            };
+            if chunk && chunks >= chunk_budget {
                 events.push_front(item);
                 break;
             }
