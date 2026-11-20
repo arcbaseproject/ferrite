@@ -144,13 +144,10 @@ fn a_server_without_a_name_gets_the_games_default() {
 }
 
 /// The official server as the launcher knows it before links.json is read.
+/// The mechanism with Horizon's addresses: Ferrite's own links.json names no official server.
 fn add_official_default(home: &Path) -> Result<(), String> {
-    let links = Links::default();
-    add_official(
-        home,
-        &links.official_server,
-        &links.official_server_previous,
-    )
+    let previous: Vec<String> = OFFICIAL_PREVIOUS.iter().map(|s| s.to_string()).collect();
+    add_official(home, OFFICIAL_ADDRESS, &previous)
 }
 
 fn ips(home: &Path) -> Vec<String> {
@@ -325,13 +322,19 @@ fn a_moved_official_server_moves_the_players_entry_once() {
 
 #[test]
 fn the_official_address_comes_from_links_json() {
-    // The defaults: the new host, and the old one to move from.
+    // Ferrite names no official server, so nothing is added to a player's list.
     let defaults = Links::default();
-    assert_eq!(defaults.official_server, "play.playhorizon.dev");
-    assert_eq!(defaults.official_server_previous, ["horizon.bunchy7s.dev"]);
-    // The file on main says the same.
-    let file = Links::parse(include_str!("../../links.json"));
-    assert_eq!(file, defaults);
+    assert_eq!(defaults.official_server, "");
+    assert!(defaults.official_server_previous.is_empty());
+    assert_eq!(Links::parse(include_str!("../../links.json")), defaults);
+    let untouched = scratch("links-none");
+    add_official(
+        &untouched,
+        &defaults.official_server,
+        &defaults.official_server_previous,
+    )
+    .unwrap();
+    assert!(shown(&untouched).is_empty());
     // A later move is a links.json edit: the list follows it, from either earlier address.
     let links = Links::parse(
         r#"{"official_server": " next.example ",

@@ -53,7 +53,6 @@ pub struct Theme {
     pub ink_soft: Hsla,
     pub muted: Hsla,
     pub accent: Hsla,
-    pub on_accent: Hsla,
     pub danger: Hsla,
     pub success: Hsla,
     pub warn: Hsla,
@@ -261,7 +260,6 @@ impl Theme {
             ink_soft: white(ink::SOFT),
             muted: white(ink::QUIET),
             accent: c(look.accent_soft),
-            on_accent: c(look.on_accent),
             // Light: `glass_ui::danger`, `live` and `warn`'s darker shades.
             danger: c(if dark { DANGER } else { 0xdc2626 }),
             success: c(if dark { LIVE } else { 0x15803d }),
@@ -297,7 +295,6 @@ impl Theme {
             ink_soft: c(p.ink_soft),
             muted: c(p.muted),
             accent: c(p.accent),
-            on_accent: c(p.on_face),
             danger: c(p.danger),
             success: c(p.success),
             warn: c(p.warn),

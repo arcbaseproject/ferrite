@@ -31,10 +31,8 @@ impl Render for Launcher {
         // Performance mode's plates are solid: no glass, no blur, nothing sampled from the scene.
         // So are an OLED theme's, over its own black sky.
         let sunset = self.theme.glass && self.theme.dark && self.theme.scene;
-        glass::set_plain(
-            performance || (self.theme.dark && !self.theme.scene),
-            self.theme.edge,
-        );
+        // Ferrite: solid plates, never frosted glass.
+        glass::set_plain(true, self.theme.edge);
         // A frame per wheel notch's step is what Performance mode saves: notches jump there.
         glide::set_on(!performance);
         // Reduced motion (the player's or the system's) holds GPUI's own animations too.
@@ -49,7 +47,7 @@ impl Render for Launcher {
         if self.bench.as_ref().is_some_and(perf::Bench::scrolling) {
             self.bench_scroll(window);
         }
-        self.servers.note_focus(window, cx);
+        self.fields.note_focus(window, cx);
         self.friend_focused = self.friend_focus.is_focused(window);
         self.mods.note_focus(window);
         self.github.note_focus(window);
@@ -69,14 +67,9 @@ impl Render for Launcher {
             Page::Play => self.play_page(cx),
             Page::Versions => self.versions_page(cx),
             Page::Mods => self.mods_page(cx),
-            Page::Servers => self.servers_page(cx),
-            Page::Wardrobe => self.wardrobe_page(cx),
-            Page::Shop => self.shop_page(cx),
             Page::Settings => self.settings_page(cx),
         };
         self.pictures.free_retired(window);
-        self.wardrobe_marks.free_replaced(window);
-        self.shop.free_replaced(window);
         // The new page fades in and rises a few pixels, as the website's tabs do (`hzl-pop`).
         let content = div()
             .relative()
@@ -137,10 +130,6 @@ impl Render for Launcher {
         };
         if self.pushed != Some(pushed) {
             self.pushed = Some(pushed);
-            self.scene.update(cx, |scene, cx| {
-                scene.set_performance(performance, cx);
-                scene.set_look(tint, blur, cx);
-            });
             self.rain
                 .update(cx, |rain, cx| rain.set(rains, accent, keep, cx));
             if let Some((night, size, scale)) = painted {
@@ -231,9 +220,7 @@ impl Render for Launcher {
                         }
                     }
                     "escape" if this.welcome_escape() => {}
-                    "escape" if this.consent_escape() => {}
                     "escape" if this.native_log_escape() => {}
-                    "escape" if this.servers_escape() => {}
                     "escape" if this.instance_escape() => {}
                     "escape" if this.settings_escape() => {}
                     "escape" if this.screenshot_escape() => {}
@@ -259,10 +246,7 @@ impl Render for Launcher {
                 }
             }))
             .capture_any_mouse_down(|_, _, _| KEYBOARD.store(false, Ordering::Relaxed))
-            .on_mouse_move(cx.listener(|this, ev: &gpui::MouseMoveEvent, window, cx| {
-                let size = window.viewport_size();
-                this.scene
-                    .update(cx, |scene, cx| scene.point(ev.position, size, cx));
+            .on_mouse_move(cx.listener(|this, _: &gpui::MouseMoveEvent, _, cx| {
                 this.rain.update(cx, |rain, cx| rain.poke(cx));
             }))
             .relative()
@@ -322,11 +306,6 @@ impl Render for Launcher {
                     )
             });
         root = root.children(row_menu);
-        if self.page == Page::Servers {
-            if let Some(dialog) = self.create_dialog(cx) {
-                root = root.child(dialog);
-            }
-        }
         root = self.import_drop_target(root, cx);
         root = root.children(self.import_note(cx));
         if let Some(dialog) = self.instance_dialog(cx) {
@@ -354,8 +333,6 @@ impl Render for Launcher {
         }
         if self.welcoming() {
             root = root.child(self.welcome_screen(cx));
-        } else if self.asking_consent() {
-            root = root.child(self.consent_screen(cx));
         }
         if self.asking_owner() {
             root = root.child(self.owner_screen(cx));
@@ -371,7 +348,7 @@ impl Render for Launcher {
                 .line_height(px(theme::WORDMARK.px * 0.5))
                 .font_weight(FontWeight::BOLD)
                 .text_color(t.ink)
-                .children("HORIZON".chars().enumerate().map(|(i, c)| {
+                .children("FERRITE".chars().enumerate().map(|(i, c)| {
                     let at = held - i as f32 * theme::STAGGER.as_secs_f32() * 1.5;
                     let p = ease_out_cubic(at / theme::ENTER.as_secs_f32());
                     div()

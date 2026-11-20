@@ -927,13 +927,9 @@ fn min_launcher_in(value: Option<&serde_json::Value>) -> Option<String> {
     value?.as_str().and_then(crate::min_launcher::version_in)
 }
 
-/// The links from main, or the built-in ones when offline.
+/// The built-in links. Ferrite doesn't read Horizon's links.json from its repository.
 pub fn links() -> Links {
-    let url = format!("https://raw.githubusercontent.com/{REPO}/main/launcher/links.json");
-    get(&url)
-        .ok()
-        .and_then(|r| r.into_string().ok())
-        .map_or_else(Links::default, |text| Links::parse(&text))
+    Links::default()
 }
 
 /// The launcher's data folder; `HORIZON_LAUNCHER_HOME` overrides it (for tests and scripts).
@@ -951,7 +947,7 @@ pub fn data_dir() -> PathBuf {
     }
     dirs::data_dir()
         .unwrap_or_else(std::env::temp_dir)
-        .join("horizon-launcher")
+        .join("ferrite-launcher")
 }
 
 /// A canonical path without Windows' verbatim prefix: `canonicalize` gives `\\?\C:\...` there,
@@ -1030,7 +1026,7 @@ fn ascii_build_dir(real: &Path, program_data: Option<PathBuf>) -> PathBuf {
         .unwrap_or_else(|| PathBuf::from(r"C:\ProgramData"));
     let key = Sha256::digest(real.as_os_str().as_encoded_bytes());
     let key: String = key[..4].iter().map(|b| format!("{b:02x}")).collect();
-    public.join(format!("horizon-launcher-{key}"))
+    public.join(format!("ferrite-launcher-{key}"))
 }
 
 /// `GetShortPathNameW`: `path`'s short (8.3) name, or None on error. A folder with no short
@@ -2574,8 +2570,8 @@ pub fn prepare_in_process(options: &prepare::Options, log: &dyn Fn(String)) -> R
     .map(|_| ())
 }
 
-/// Where the game keeps saves and options.txt: `HORIZON_HOME`, else `horizon` in the platform's
-/// data folder (~/.local/share/horizon on Linux, as the release folders' horizon.sh uses). It is
+/// Where the game keeps saves and options.txt: `HORIZON_HOME`, else `ferrite` in the platform's
+/// data folder (~/.local/share/ferrite on Linux). It is
 /// never inside a version folder, so installing, updating or removing a version keeps the saves.
 pub fn game_home() -> PathBuf {
     if let Some(home) = std::env::var_os("HORIZON_HOME").filter(|h| !h.is_empty()) {
@@ -2591,7 +2587,7 @@ pub fn game_home() -> PathBuf {
     }
     dirs::data_dir()
         .unwrap_or_else(std::env::temp_dir)
-        .join("horizon")
+        .join("ferrite")
 }
 
 /// Whether No AI is on: every AI feature hidden and off (`horizon_platform::no_ai`, kept in the
@@ -2848,12 +2844,11 @@ pub fn client_command(tag: &str) -> Command {
     let home = game_home();
     let _ = fs::create_dir_all(&home);
     let mut cmd = Command::new(client_program(tag));
-    if crate::developer_install::uses_developer(tag) {
-        cmd.env("HORIZON_TELEMETRY_URL", "off");
-    }
+    // Ferrite sends nothing to Horizon's servers: no telemetry, no "I'm playing" heartbeat.
+    cmd.env("HORIZON_TELEMETRY_URL", "off")
+        .env("HORIZON_NO_HEARTBEAT", "1");
     crate::run_leases::mark(&mut cmd, &version_dir(tag));
     strip_launcher_render_env(&mut cmd);
-    crate::telemetry::ping_only_if_allowed(&mut cmd, !Settings::load().ping_off);
     cmd.current_dir(&home)
         .env("HORIZON_HOME", &home)
         .env_remove("HORIZON_ACCOUNT_SESSIONS")
@@ -2889,9 +2884,9 @@ pub(crate) fn client_program(tag: &str) -> PathBuf {
 
 pub fn server_command(tag: &str, folder: &Path) -> Command {
     let mut cmd = Command::new(version_dir(tag).join(CLIENT));
-    if crate::developer_install::uses_developer(tag) {
-        cmd.env("HORIZON_TELEMETRY_URL", "off");
-    }
+    // Ferrite sends nothing to Horizon's servers: no telemetry, no "I'm playing" heartbeat.
+    cmd.env("HORIZON_TELEMETRY_URL", "off")
+        .env("HORIZON_NO_HEARTBEAT", "1");
     crate::run_leases::mark(&mut cmd, &version_dir(tag));
     cmd.current_dir(folder)
         .arg("--resources")
@@ -3312,7 +3307,18 @@ fn launcher_update_from(releases: &[Release], own: &str) -> Option<Release> {
 pub fn releases_and_updates(
     on_releases: impl FnOnce(Result<Vec<Release>, String>),
 ) -> Result<Updates, String> {
-    releases_and_updates_with(release_list, installed, launcher_releases_in, on_releases)
+    releases_and_updates_with(
+        release_list,
+        installed,
+        |list| {
+            if self_update_allowed() {
+                launcher_releases_in(list)
+            } else {
+                Vec::new()
+            }
+        },
+        on_releases,
+    )
 }
 
 fn releases_and_updates_with(
@@ -3482,7 +3488,8 @@ fn launcher_asset_running_from(appimage: bool) -> Option<&'static str> {
 
 /// Development builds and `HORIZON_LAUNCHER_NO_SELF_UPDATE` never replace themselves.
 pub fn self_update_allowed() -> bool {
-    !cfg!(debug_assertions) && std::env::var_os("HORIZON_LAUNCHER_NO_SELF_UPDATE").is_none()
+    // Ferrite fork: updates come from upstream Horizon's releases, which would replace this launcher.
+    false
 }
 
 /// The version in `horizon-launcher --version`'s output (`horizon-launcher 0.1.5`).
@@ -4876,7 +4883,7 @@ mod tests {
         assert_eq!(dir.parent(), Some(public.as_path()));
         let name = dir.file_name().unwrap().to_str().unwrap();
         assert!(
-            name.starts_with("horizon-launcher-") && name.len() == 25,
+            name.starts_with("ferrite-launcher-") && name.len() == 25,
             "{name}"
         );
         assert_eq!(dir, ascii_build_dir(pavlo, Some(public.clone())), "stable");
@@ -6591,9 +6598,15 @@ pub fn {f}("
     #[test]
     fn links_fall_back_to_the_built_in_ones() {
         let defaults = Links::default();
-        assert_eq!(defaults.discord, "https://discord.gg/playhorizon");
-        assert_eq!(defaults.sponsor, "https://github.com/sponsors/ludovic111");
-        assert_eq!(defaults.website, "https://playhorizon.dev");
+        // Ferrite ships no community, sponsor or website links.
+        assert_eq!(
+            (
+                defaults.discord.as_str(),
+                defaults.sponsor.as_str(),
+                defaults.website.as_str()
+            ),
+            ("", "", "")
+        );
         assert_eq!(
             Links::parse(r#"{"roadmap":"https://example.org/tasks","docs":" "}"#),
             Links {

@@ -13,7 +13,7 @@ use crate::glass_ui::{self as ui, white};
 use horizon_theme::glass::{ink, radius};
 
 /// The list's entries: name and icon. The settings sections, in the mockup's order.
-const SECTIONS: [(&str, &str); 10] = [
+const SECTIONS: [(&str, &str); 8] = [
     ("General", "sliders-horizontal"),
     ("Appearance", "color-picker"),
     ("Accounts", "user"),
@@ -21,8 +21,6 @@ const SECTIONS: [(&str, &str); 10] = [
     ("Game", "game-controller-01"),
     ("Network", "globe-02"),
     ("Storage", "package-01"),
-    ("Data & privacy", "view"),
-    ("AI", "ai-chat-02"),
     ("About", "information-circle"),
 ];
 
@@ -32,7 +30,7 @@ const CREDIT_URL: &str = horizon_addresses::LAUNCHER_LOOK_CREDIT;
 
 /// What the search finds in each section, in [`SECTIONS`]' order: its rows' names and words a
 /// player may look for them by. English; a query matches them and their translation.
-const INDEX: [&[&str]; 10] = [
+const INDEX: [&[&str]; 8] = [
     &[
         "Language",
         "While playing",
@@ -75,8 +73,6 @@ const INDEX: [&[&str]; 10] = [
     ],
     &["Proxy"],
     &["Storage", "Disk space", "Cache"],
-    &["Data collection", "Telemetry", "Crash reports"],
-    &["No AI", "Agents", "MCP"],
     &[
         "UI made by Xmilon",
         "Credits",
@@ -596,7 +592,7 @@ impl Launcher {
             .gap(px(8.))
             .child(tile(
                 self.horizon_mark(42.),
-                "Horizon".into(),
+                "Ferrite".into(),
                 installed.unwrap_or_else(|| tr("Nightly").to_string()),
                 div()
                     .flex()
@@ -669,9 +665,6 @@ impl Launcher {
             .child(self.game_architecture_row(n, cx))
             .child(self.game_args_row(n + 1, cx))
             .child(self.mods_auto_update_row(cx));
-        let ai = section(8)
-            .child(self.no_ai_row(n, cx))
-            .children(self.agents_section(cx));
         let mono = |s: String| {
             div()
                 .font_family(theme::MONO)
@@ -679,7 +672,7 @@ impl Launcher {
                 .child(s)
                 .into_any_element()
         };
-        let about = section(9)
+        let about = section(7)
             .child(self.credit_row(cx))
             .child(self.version_row(&t))
             .child(self.location_row(0, cx).mb(px(0.)))
@@ -723,8 +716,6 @@ impl Launcher {
             game,
             network,
             section(6).child(self.glass_storage(cx)),
-            section(7).child(self.collection_section(cx)),
-            ai,
             about,
         ]
     }

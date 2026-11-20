@@ -3,9 +3,9 @@
 //! into it), Remove after a confirmation, and a line to add one. The official server is put on top
 //! once, as the game does, at the address links.json gives (`server_list::add_official`).
 use super::*;
+use fields::Field;
 use gpui::{Image, ImageFormat};
 use horizon_launcher::server_list::{self, Server};
-use servers_page::Field;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -54,7 +54,7 @@ impl Launcher {
             let address = ip.clone();
             let task = cx
                 .background_executor()
-                .spawn(async move { horizon_launcher::telemetry::server_players(&address) });
+                .spawn(async move { server_players(&address) });
             cx.spawn(async move |this, cx| {
                 let answer = task.await;
                 let _ = this.update(cx, |this, cx| {
@@ -119,12 +119,12 @@ impl Launcher {
 
     /// Enter in the address field, or Add.
     pub(super) fn add_server(&mut self) {
-        let name = self.servers.value(Field::ServerName).to_string();
-        let address = self.servers.value(Field::ServerAddress).to_string();
+        let name = self.fields.value(Field::ServerName).to_string();
+        let address = self.fields.value(Field::ServerAddress).to_string();
         self.edit_servers(|list| list.add(&name, &address));
         if self.multiplayer.error.is_none() {
-            self.servers.text(Field::ServerName).set(String::new());
-            self.servers.text(Field::ServerAddress).set(String::new());
+            self.fields.text(Field::ServerName).set(String::new());
+            self.fields.text(Field::ServerAddress).set(String::new());
             self.multiplayer.adding = false;
         }
     }
@@ -149,7 +149,7 @@ impl Launcher {
                 this.multiplayer.adding = !this.multiplayer.adding;
                 this.multiplayer.error = None;
                 if this.multiplayer.adding {
-                    this.servers.focus_soon = Some(Field::ServerAddress);
+                    this.fields.focus_soon = Some(Field::ServerAddress);
                 }
                 cx.notify();
             }),
@@ -303,4 +303,16 @@ impl Launcher {
             )
             .child(actions)
     }
+}
+
+/// A server's players by its server-list status ping, as the game's Multiplayer list sends it.
+fn server_players(address: &str) -> Option<horizon_telemetry::server_status::Players> {
+    let (host, port) = horizon_telemetry::server_status::split_address(address)?;
+    let (host, port) = horizon_platform::protocol::server_redirect(&host, port);
+    horizon_telemetry::server_status::players_at(
+        address,
+        (&host, port),
+        std::time::Duration::from_secs(3),
+    )
+    .ok()
 }

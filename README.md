@@ -1,3 +1,18 @@
+> **Ferrite** is a fork of [Horizon](https://github.com/ludovic111/horizon) by Ludovic Marie, the Horizon Team and its contributors, under the same licence (LGPL-3.0-or-later; older code MIT).
+> It is not an official Horizon build. Self-update is off: the launcher would otherwise replace itself with upstream Horizon.
+> Internal crate names stay `horizon-*` so upstream changes merge cleanly. The text below is upstream's.
+
+From this checkout, `./run.sh` builds and starts the local Ferrite game. Prepare Minecraft 26.3
+resources first using [the source build instructions](CONTRIBUTING.md#build-it). Game files and
+launcher data default to separate Ferrite folders in your platform’s data directory. Existing
+Horizon data stays in its original folders.
+
+`./run.sh --launcher` opens the launcher. Its Versions catalog installs upstream Horizon builds.
+To use the local build with launcher-managed instances and Microsoft sign-in, install a compatible
+base version, then run
+`./run.sh --launcher import-build "$PWD/target/fast/horizon-client" --trust-unsigned`.
+The import selects the local executable for Play. On Windows, use `horizon-client.exe`.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/media/readme/title-dark.png">

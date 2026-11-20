@@ -1,7 +1,7 @@
 //! Settings' accent colour and Home background rows (`horizon_launcher::themes`).
 use super::*;
+use crate::fields::Field;
 use crate::glass_ui as ui;
-use crate::servers_page::Field;
 use crate::theme::Night;
 use gpui::{
     canvas, fill, point, size, Bounds, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent,
@@ -106,7 +106,7 @@ impl Launcher {
         let current = themes::theme(self.settings.theme.as_deref()).map(|th| th.id);
         let mut options: Vec<(Option<&'static str>, &'static str, &'static str, Night)> = vec![(
             None,
-            "Horizon",
+            "Ferrite",
             themes::HORIZON_DESCRIPTION,
             theme::night::NIGHT,
         )];
@@ -715,13 +715,13 @@ impl Launcher {
     /// the accent at once, as in the mockup.
     fn sync_accent_hex(&mut self, cx: &mut Context<Self>) {
         let shown = self.settings.accent.hex();
-        if !self.servers.has_focus(Field::AccentHex) {
-            if self.servers.value(Field::AccentHex) != shown {
-                self.servers.text(Field::AccentHex).set(shown);
+        if !self.fields.has_focus(Field::AccentHex) {
+            if self.fields.value(Field::AccentHex) != shown {
+                self.fields.text(Field::AccentHex).set(shown);
             }
             return;
         }
-        let typed = self.servers.value(Field::AccentHex).trim();
+        let typed = self.fields.value(Field::AccentHex).trim();
         let hex = format!("#{}", typed.trim_start_matches('#'));
         if let Some(accent) = Accent::parse(&hex).filter(|a| *a != self.settings.accent) {
             self.settings.accent = accent;

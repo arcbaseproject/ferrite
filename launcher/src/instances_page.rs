@@ -2,9 +2,9 @@
 //! dialog that makes one (empty, or a copy of the selected one) or changes its name, group and
 //! icon.
 use super::*;
+use fields::Field;
 use gpui::RenderImage;
 use horizon_launcher::instances::{self, Icon, Instance, Kind as InstanceKind};
-use servers_page::Field;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -315,8 +315,8 @@ impl Launcher {
             .as_ref()
             .map(|i| (i.name.clone(), i.group.clone().unwrap_or_default()))
             .unwrap_or_default();
-        self.servers.text(Field::InstanceName).set(name);
-        self.servers.text(Field::InstanceGroup).set(group);
+        self.fields.text(Field::InstanceName).set(name);
+        self.fields.text(Field::InstanceGroup).set(group);
         let game = editing
             .as_ref()
             .and_then(|i| i.java.clone())
@@ -325,10 +325,10 @@ impl Launcher {
             .window
             .map(|(w, h)| (w.to_string(), h.to_string()))
             .unwrap_or_default();
-        self.servers.text(Field::JavaArgs).set(game.jvm_args);
-        self.servers.text(Field::WindowWidth).set(width);
-        self.servers.text(Field::WindowHeight).set(height);
-        self.servers.focus_soon = Some(Field::InstanceName);
+        self.fields.text(Field::JavaArgs).set(game.jvm_args);
+        self.fields.text(Field::WindowWidth).set(width);
+        self.fields.text(Field::WindowHeight).set(height);
+        self.fields.focus_soon = Some(Field::InstanceName);
         // What it plays now: Edit can switch it (`instances::switch`).
         let java = match editing.as_ref().and_then(|i| i.java.as_ref()) {
             None => Default::default(),
@@ -362,7 +362,7 @@ impl Launcher {
             busy: false,
             java,
         });
-        self.servers.text(Field::InstanceVersion).set(String::new());
+        self.fields.text(Field::InstanceVersion).set(String::new());
         // A new one starts with the name it would get ("My Horizon"), until the player types one.
         if !editing_one {
             self.change(|_| {});
@@ -375,7 +375,7 @@ impl Launcher {
             return;
         };
         self.open_instance_dialog(None);
-        self.servers
+        self.fields
             .text(Field::InstanceName)
             .set(format!("{name} copy"));
         if let Some(d) = &mut self.instances.dialog {
@@ -442,13 +442,13 @@ impl Launcher {
             }
         };
         let selected = self.selected_instance().map(|i| i.id.clone());
-        let name = self.servers.value(Field::InstanceName).trim().to_string();
-        let group = Some(self.servers.value(Field::InstanceGroup).to_string());
+        let name = self.fields.value(Field::InstanceName).trim().to_string();
+        let group = Some(self.fields.value(Field::InstanceGroup).to_string());
         // A Java instance's arguments and window (the sheet's Launch): both sizes or neither.
-        let jvm_args = self.servers.value(Field::JavaArgs).trim().to_string();
+        let jvm_args = self.fields.value(Field::JavaArgs).trim().to_string();
         let window = match validate_window(
-            self.servers.value(Field::WindowWidth),
-            self.servers.value(Field::WindowHeight),
+            self.fields.value(Field::WindowWidth),
+            self.fields.value(Field::WindowHeight),
         ) {
             Ok(window) => window,
             Err(()) => {
@@ -640,7 +640,7 @@ impl Launcher {
         let n = t.night;
         let from = self
             .selected_instance()
-            .map_or_else(|| "Horizon".into(), |i| i.name.clone());
+            .map_or_else(|| "Ferrite".into(), |i| i.name.clone());
         let row = |label: &'static str, control: AnyElement| {
             div()
                 .flex()

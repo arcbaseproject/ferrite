@@ -58,12 +58,10 @@ impl Launcher {
             || !self.auth_busy.is_empty()
             || (self.sign_in.is_some() && !matches!(self.sign_in_state, Some(SignInState::Done(_))))
             || matches!(self.self_update, SelfUpdate::Downloading(..))
-            || self.servers.location_busy()
             || self.importing.location_busy()
             || self.github.busy()
             || self.worlds.location_busy()
             || self.instances.location_busy()
-            || self.internet.location_busy()
             || self.export.as_ref().is_some_and(|p| p.location_busy())
     }
 

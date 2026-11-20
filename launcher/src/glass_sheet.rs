@@ -6,10 +6,10 @@
 use super::*;
 use crate::glass_instance::section;
 use crate::glass_ui::{self as ui, white};
+use fields::Field;
 use horizon_launcher::instances::{Channel, Icon, Instance, Kind as InstanceKind, Plays};
 use horizon_theme::glass::{ink, radius};
 use new_instance::NewKind;
-use servers_page::Field;
 
 /// The sheet's sections.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -197,8 +197,8 @@ impl Launcher {
             return Vec::new();
         };
         let draft = Draft {
-            name: self.servers.value(Field::InstanceName).trim().to_string(),
-            group: self.servers.value(Field::InstanceGroup).to_string(),
+            name: self.fields.value(Field::InstanceName).trim().to_string(),
+            group: self.fields.value(Field::InstanceGroup).to_string(),
             icon: d.icon.clone(),
             picture: match d.picture {
                 Some(Some(_)) => true,
@@ -208,10 +208,10 @@ impl Launcher {
             horizon: (d.java.kind == NewKind::Horizon).then(|| (d.pin.clone(), d.channel)),
             plays: self.draft_plays(saved).unwrap_or_else(|| Plays::of(saved)),
             java: (
-                self.servers.value(Field::JavaArgs).trim().to_string(),
+                self.fields.value(Field::JavaArgs).trim().to_string(),
                 (
-                    self.servers.value(Field::WindowWidth).trim().to_string(),
-                    self.servers.value(Field::WindowHeight).trim().to_string(),
+                    self.fields.value(Field::WindowWidth).trim().to_string(),
+                    self.fields.value(Field::WindowHeight).trim().to_string(),
                 ),
             ),
             hooks: self.hooks_typed(&saved.id),

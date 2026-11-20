@@ -41,12 +41,10 @@ pub const GET_THE_GAME: GetTheGame = GetTheGame {
     button: "horizon.get_the_game.button",
 };
 
-/// At the start of a player's game: the official server into the list in `game_dir` and the
-/// withdrawn partner server out of it, a failure only logged.
+/// At the start of a player's game: the withdrawn partner server out of the list in `game_dir`,
+/// a failure only logged.
 pub fn update(game_dir: &Path) {
-    if let Err(e) = add_official_server(game_dir) {
-        log::warn!("could not add the official server to servers.dat: {e}");
-    }
+    // Ferrite offers no official server: Horizon's is upstream's, not ours.
     if let Err(e) = withdraw_partner_servers(game_dir) {
         log::warn!("could not take the withdrawn partner server out of servers.dat: {e}");
     }

@@ -642,7 +642,27 @@ fn table(language: Language) -> &'static Table {
 
 /// `en` in `language`, or `en` itself where the table lacks it.
 pub fn tr_in(language: Language, en: &str) -> &str {
-    table(language).get(en).copied().unwrap_or(en)
+    rebrand(table(language).get(en).copied().unwrap_or(en))
+}
+
+/// Ferrite fork: UI text names the product "Ferrite". Leaks one copy per distinct string;
+/// shortcut: bounded by the launcher's fixed strings, move to the tables at load if `tr` gets runtime text.
+fn rebrand(s: &str) -> &str {
+    use std::sync::Mutex;
+    static CACHE: OnceLock<Mutex<HashMap<String, &'static str>>> = OnceLock::new();
+    if !s.contains("Horizon") {
+        return s;
+    }
+    let mut cache = CACHE
+        .get_or_init(Default::default)
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    if let Some(&hit) = cache.get(s) {
+        return hit;
+    }
+    let out: &'static str = Box::leak(s.replace("Horizon", "Ferrite").into_boxed_str());
+    cache.insert(s.to_owned(), out);
+    out
 }
 
 /// `en` in the launcher's language.

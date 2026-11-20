@@ -2995,14 +2995,6 @@ name = "horizon-addresses"
 version = "0.1.0"
 
 [[package]]
-name = "horizon-anticheat"
-version = "0.1.0"
-dependencies = [
- "serde",
- "toml 1.1.8+spec-1.1.0",
-]
-
-[[package]]
 name = "horizon-assets"
 version = "0.1.0"
 dependencies = [
@@ -3024,16 +3016,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "horizon-chat-filter"
-version = "0.1.0"
-dependencies = [
- "horizon-server-files",
- "serde",
- "serde_json",
- "toml 1.1.8+spec-1.1.0",
-]
-
-[[package]]
 name = "horizon-core"
 version = "0.1.0"
 dependencies = [
@@ -3041,19 +3023,6 @@ dependencies = [
  "serde",
  "serde_json",
  "unicode_names2",
-]
-
-[[package]]
-name = "horizon-cosmetics"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "glam",
- "horizon-addresses",
- "png 0.18.1",
- "serde",
- "serde_json",
- "ureq",
 ]
 
 [[package]]
@@ -3095,10 +3064,6 @@ name = "horizon-hooks"
 version = "0.1.0"
 
 [[package]]
-name = "horizon-java-properties"
-version = "0.1.0"
-
-[[package]]
 name = "horizon-launcher"
 version = "0.2.0"
 dependencies = [
@@ -3114,21 +3079,17 @@ dependencies = [
  "futures-lite",
  "futures-util",
  "getrandom 0.3.4",
- "glam",
  "gpui-fast",
  "gpui-fast-platform",
  "horizon-addresses",
- "horizon-cosmetics",
  "horizon-friends",
  "horizon-launcher-scenery",
- "horizon-mcp",
  "horizon-mod-api-gen",
  "horizon-mod-point-emit",
  "horizon-mod-vocab",
  "horizon-platform",
  "horizon-port-pack",
  "horizon-release-sign",
- "horizon-server-launch",
  "horizon-shader-api",
  "horizon-telemetry",
  "horizon-theme",
@@ -3176,13 +3137,6 @@ dependencies = [
  "image",
  "objc2-app-kit 0.3.2",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "horizon-mcp"
-version = "0.1.0"
-dependencies = [
- "serde_json",
 ]
 
 [[package]]
@@ -3330,14 +3284,12 @@ dependencies = [
  "horizon-core",
  "horizon-guest-stack",
  "horizon-hooks",
- "horizon-java-properties",
  "horizon-mod-api-gen",
  "horizon-mod-package",
  "horizon-mod-point-shape",
  "horizon-perf-format",
  "horizon-prepare",
  "horizon-protocol",
- "horizon-server-files",
  "horizon-system",
  "horizon-world",
 ]
@@ -3396,38 +3348,6 @@ version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "ring",
-]
-
-[[package]]
-name = "horizon-server-files"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "getrandom 0.3.4",
- "horizon-core",
- "horizon-java-properties",
- "horizon-protocol",
- "horizon-world",
- "log",
- "serde",
- "ureq",
- "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "horizon-server-launch"
-version = "0.1.0"
-dependencies = [
- "dunce",
- "horizon-anticheat",
- "horizon-chat-filter",
- "horizon-core",
- "horizon-platform",
- "horizon-server-files",
- "serde",
- "toml 1.1.8+spec-1.1.0",
- "toml_edit 0.25.17+spec-1.1.0",
- "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -7352,7 +7272,6 @@ dependencies = [
  "indexmap",
  "toml_datetime 1.1.2+spec-1.1.0",
  "toml_parser",
- "toml_writer",
  "winnow 1.0.4",
 ]
 

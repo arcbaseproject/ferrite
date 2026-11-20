@@ -1692,13 +1692,6 @@ pub fn card_heading(label: impl Into<SharedString>) -> Div {
         .child(label.into())
 }
 
-/// A card's note: 13 px on 1.5, white at 55 %.
-pub fn card_note(label: impl Into<SharedString>) -> Div {
-    text(13., FontWeight::NORMAL, ink::QUIET)
-        .line_height(px(19.5))
-        .child(label.into())
-}
-
 /// A tooltip's view: one line on a solid float, for controls shown by their icon alone.
 pub struct Tip(SharedString);
 

@@ -5,12 +5,12 @@
 //! appearance only: the light look keeps `instance_dialog`.
 use super::*;
 use crate::glass_ui::{self as ui, white};
+use fields::Field;
 use horizon_launcher::instances::{self, Channel, Icon, Instance};
 use horizon_launcher::loaders::Kind as Loader;
 use horizon_launcher::nightly::{stable_builds, StableBuild};
 use horizon_theme::glass::{fill, ink, radius};
 use new_instance::{NewKind, VersionList};
-use servers_page::Field;
 use std::sync::Arc;
 
 /// The loaders Prism Launcher offers, in the mockup's order. Those `loaders::Kind` can install
@@ -435,7 +435,7 @@ impl Launcher {
         cx: &mut Context<Self>,
     ) -> Stateful<Div> {
         let t = self.theme;
-        let typed = self.servers.value(Field::InstanceName).trim().to_string();
+        let typed = self.fields.value(Field::InstanceName).trim().to_string();
         let name = if typed.is_empty() {
             tr("New instance").to_string()
         } else {
@@ -452,12 +452,12 @@ impl Launcher {
         let mut summary = match kind {
             NewKind::Horizon => match self.draft_horizon() {
                 Some(tag) => format!("Horizon · {}", self.version_label(&tag)),
-                None => "Horizon".into(),
+                None => "Ferrite".into(),
             },
             NewKind::Vanilla => format!("{} · {minecraft}", tr("Vanilla")),
             NewKind::Modded => format!("{} · {minecraft}", loader.name()),
         };
-        let group = self.servers.value(Field::InstanceGroup).trim().to_string();
+        let group = self.fields.value(Field::InstanceGroup).trim().to_string();
         if !group.is_empty() {
             summary = format!("{summary} · {group}");
         }
@@ -1229,7 +1229,7 @@ impl Launcher {
         let selected = self.selected_instance().cloned();
         let from = selected
             .as_ref()
-            .map_or_else(|| "Horizon".into(), |i| i.name.clone());
+            .map_or_else(|| "Ferrite".into(), |i| i.name.clone());
         let icon = match &selected {
             Some(i) => self.glass_instance_icon(i, 36.),
             None => self.horizon_mark(36.),
@@ -1293,7 +1293,7 @@ impl Launcher {
         let file_picture = matches!(&d_picture, Some(Some(_))) && logo.is_none();
         let own_picture = d_picture.is_none() && has_saved_picture;
         let pictured = matches!(&d_picture, Some(Some(_))) || own_picture;
-        let typed = self.servers.value(Field::InstanceName).trim().to_string();
+        let typed = self.fields.value(Field::InstanceName).trim().to_string();
         let name = if typed.is_empty() { "N".into() } else { typed };
         let pick = |icon: Option<Icon>| {
             cx.listener(

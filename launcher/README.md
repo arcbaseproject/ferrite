@@ -1,4 +1,4 @@
-# Horizon launcher
+# Ferrite launcher
 
 A small desktop app that installs Horizon builds, prepares them from your own copy of
 Minecraft, and starts the client or a dedicated server. Built with [GPUI Fast](https://github.com/longbridge/gpui-fast),
@@ -28,7 +28,7 @@ The opening, then Play ([clip](docs/opening.webm)):
   unchanged. Links/junctions and overlapping roots are refused; Windows build destinations need ASCII
   characters without spaces. Copy or commit failure leaves the original location selected.
   The location pointer is independent of the moved folders, at the platform config directory's
-  `horizon-launcher-location/location.json`. `HORIZON_LAUNCHER_LOCATION_FILE` selects an alternative
+  `ferrite-launcher-location/location.json`. `HORIZON_LAUNCHER_LOCATION_FILE` selects an alternative
   absolute pointer file for portable installations. Nonempty `HORIZON_LAUNCHER_HOME` and `HORIZON_HOME`
   still override their respective roots; remove these overrides before using Move. A missing destination
   fails explicitly instead of silently creating empty data in the default location.
@@ -75,43 +75,13 @@ The opening, then Play ([clip](docs/opening.webm)):
   **Play** starts the game as the pack's own profile (`ports/<pack>/home/` in the game's home:
   its own saves and options) with those mods. Nothing is uploaded or shared: mod jars and ports
   stay on this computer.
-- **Servers**: host a world for friends with buttons. **Create a server** asks for a name, a world
-  (a new one, with an optional seed, or a copy of one of your single-player worlds), the game mode,
-  difficulty, most players, who can join (friends only, the default, or anyone with the address)
-  and your agreement to the Minecraft EULA; with the defaults (tick the EULA, press Create) you get
-  a friends-only survival world with you as its operator. Each server then has **Start**, **Stop** and **Restart**, its state (also
-  when it crashed and was restarted), players online with their heads, TPS, MSPT and RAM, the
-  address friends on your network type with **Copy**, a console that takes commands, **Open the
-  web panel**, and four tabs: **Overview**; **Players** (online players with Make operator, Kick
-  and Ban; who may join, with Friends only, Let in and Remove; Unban); **Settings** (the message
-  in the server list, game mode, difficulty, PvP, most players, view and simulation distance,
-  port, account checks, **Run in the background and at login**); **Backups** (Back up now, the
-  list with dates and sizes, Restore with a confirmation, Back up automatically, and **Updates**:
-  Check for updates, Update now with its automatic rollback, and how many older versions to
-  keep). Changes the running game can take apply at once, the others say "Restart to apply".
-  Everything goes through `horizon-server` itself ([docs/hosting.md](../docs/hosting.md)):
-  the launcher copies a prepared version's programs and game files into `server-runtime/` laid
-  out as `install.sh` does, runs `horizon-server init`, `config`, `start`, `backup`, `restore`,
-  `update` and `service` there, and talks to a running server through its control API. Problems
-  are said in plain words, with a button when there's a fix (another port, the game files, the
-  EULA).
-  **Friends over the internet** (on Overview) uses Tailscale: it says whether Tailscale is
-  installed and signed in (with Install, Sign in and Check again; signing in is always yours, in
-  Tailscale's own app or page), shows this computer's Tailscale name and address with **Copy**,
-  and invites a friend to this one computer: in the admin console, or here with an access token
-  you make there (kept in the system keychain), which also lists invitations with Withdraw /
-  Stop sharing and offers **Limit them to Minecraft**: when your tailnet has Tailscale's default
-  access controls, one click changes them so friends you share with reach only the server's
-  port (Remove the limit undoes it); custom access controls are never rewritten, the page gives
-  the rule to add instead. Horizon never turns on Funnel.
 - **Instances**: separate game folders, each with its own worlds, options and packs. The game's
   folder stays the first one, "Horizon", exactly where it was; imported and registry modpacks are
   instances too, in their own folders as before; new ones go to `instances/<name>/` in the game's
   folder, empty but for the player's options and name, or a copy of another instance (never its
   sign-in sessions, logs or data collection state). Names, icons (a block or item texture from the
   player's prepared files, or a colour) and groups are kept in `instances.json` in the launcher's
-  data folder, so renaming moves nothing. Every instance follows the launcher's data collection
-  answer and No AI. In the window, **+** beside Instances makes one, the sidebar lists them by
+  data folder, so renaming moves nothing. Every instance follows the launcher's No AI setting. In the window, **+** beside Instances makes one, the sidebar lists them by
   group (click one to play it), and Home's Instance row has Edit (name, group, icon), Copy and
   Open folder. The Instance row shows its play time and when it was last played: every run started
   from the window or `horizon-launcher play` adds to it (`instance list` shows it too). Each
@@ -149,7 +119,7 @@ The opening, then Play ([clip](docs/opening.webm)):
   launcher. On Windows a wrapper that is a shell (`cmd` or PowerShell) can't join
   a server or open a world: it would read their names as commands. Both the window's Play
   and `play` use them. `horizon-launcher instance launch <instance> [--pre-launch …]
-  [--wrapper …] [--env …]` (an MCP agent needs `confirm: true`: it sets commands Play runs).
+  [--wrapper …] [--env …]`.
   On Linux the panel also has switches for what the computer has: **GameMode** (`gamemoderun`
   on the PATH), **MangoHud** (`mangohud`), and, with two graphics cards under
   `/sys/class/drm`, the **dedicated graphics card** (`DRI_PRIME=1`, or NVIDIA's
@@ -230,11 +200,9 @@ The opening, then Play ([clip](docs/opening.webm)):
   and `horizon-launcher play --server <address or name>`.
 - **Patch notes**: each release's notes, newest first, with a link to GitHub Sponsors. Quiet "Sponsor", "Discord" and "Website" links sit in the sidebar footer.
 
-Data lives in the platform's data directory (`~/.local/share/horizon-launcher` on Linux,
-`~/Library/Application Support/horizon-launcher` on macOS, `%APPDATA%\horizon-launcher` on
-Windows): `versions/<tag>/`, `server-jars/`, `server/`, `settings.json`, and for the Servers
-page `servers.json` (the list), `servers/<name>/` (the servers created there) and
-`server-runtime/` (the programs and game files they run).
+Launcher data lives in the platform’s data directory under `ferrite-launcher`. Game data
+defaults to `ferrite` in that directory. The launcher keeps its installed game versions,
+server jars and settings in its own folder.
 
 - **Settings**: install new Horizon versions automatically (on unless you turn it off; the
   selected version only moves to the new one if you were on the newest), the opening animation,
@@ -394,7 +362,7 @@ files at build time and install them in the corresponding system directories.
 
 The same binary is a command-line tool; without a subcommand it opens the window. On Windows it
 is a windowed program, so a desktop start opens no terminal; a subcommand writes to the terminal
-it was typed in, or to the pipes and files it was given (MCP keeps its stdio). Interactive `cmd`
+it was typed in, or to the pipes and files it was given. Interactive `cmd`
 and PowerShell don't wait for a windowed program: they show the prompt again before its output
 and don't set `%ERRORLEVEL%` / `$LASTEXITCODE`. Scripts that need the exit code use
 `start /wait horizon-launcher …` or `Start-Process -Wait`, or read its output through a pipe.
@@ -443,22 +411,10 @@ and don't set `%ERRORLEVEL%` / `$LASTEXITCODE`. Scripts that need the exit code 
     horizon-launcher mods install <id or slug>      checksum checked, with what it needs; a modpack is imported
     horizon-launcher mods update [<pack>] [--check]
     horizon-launcher mods remove <pack>
-    horizon-launcher servers [list]                 the servers hosted from the launcher, and whether they run
-    horizon-launcher servers create [--name N] [--seed S | --copy-world DIR] [--mode M] [--difficulty D]
-                     [--max-players N] [--open] [--offline] [--player NAME]... --accept-eula
-    horizon-launcher servers set-up [--version <tag>]   copy a prepared version's programs and game files for servers
-    horizon-launcher servers run <server> -- <horizon-server command>   for example: servers run "My server" -- start
-    horizon-launcher servers forget <server>        take it off the list (its folder stays)
     horizon-launcher benchmark [--repeats N]        measure the launcher (see Performance log)
-    horizon-launcher data [status]                  what data collection is allowed, the install ID, what waits
-    horizon-launcher data allow|deny <kinds|all>    performance, crashes, bugs, benchmarks
-    horizon-launcher data show                      exactly what would be sent
-    horizon-launcher data delete                    delete what was sent and what waits; new install ID
-    horizon-launcher data bug "<text>" [--log]      a bug report, printed for you to confirm first
-    horizon-launcher data benchmark <report.json>   upload a benchmark report, printed first
 
 `--json` prints JSON where there is something to report (`versions`, `install`, `notes`,
-`next`, `links`, `game-args`, `update --check`, `logs`, `account`, `benchmark`, `data`, `modpack`). Errors go to stderr with exit code 1. `server` runs in the terminal,
+`next`, `links`, `game-args`, `update --check`, `logs`, `account`, `benchmark`, `modpack`). Errors go to stderr with exit code 1. `server` runs in the terminal,
 so lines you type reach its console. `HORIZON_LAUNCHER_HOME` replaces the data folder (for
 scripts and tests). Test runs also set `HORIZON_LAUNCHER_TRASH=<folder>` and
 `HORIZON_LAUNCHER_CLIPBOARD=<file>` inside their scratch folders: what Delete would move to the
@@ -473,45 +429,13 @@ home remains a managed lease requirement, so a late game cannot start after clea
 game builds still block shared-cache deletion, and a running game's leases prevent deletion
 until its final owner exits.
 
-## AI agents (MCP)
-
-`horizon-launcher mcp` is a Model Context Protocol server over stdio. `horizon-launcher
-agent-config` prints the config for Claude Code, Codex, Cursor and any MCP client, and the
-command that adds it; for Claude Code:
-
-    claude mcp add --scope user horizon -- horizon-launcher mcp
-
-(with the full path to the binary if it is not on your `PATH`). Every CLI command is a tool of the
-same name and arguments, generated from the CLI's definition (`src/cli_tools.rs`): `versions`,
-`install`, `remove`, `prepare`, `settings`, `mods_search`, `mods_install`, `modpack_import`,
-`servers_create`, `data_status`... A call runs that command with `--json` and returns its
-output. Tools that delete something (`remove`, `mods_remove`, `modpack_remove`,
-`servers_forget`, `account_sign_out`, `data_delete`) need `confirm: true`. The session runs a few
-itself, under the CLI's names: `play`, `server` with `server_command`, `server_log` and
-`server_stop`, `account_list` and `account_sign_in` (returns the link and code for the player;
-the sign-in finishes in the background). A server started through MCP stops (cleanly, with
-`stop`) when the session ends. Starting one needs `accept_eula`, which an agent should only pass
-with the player's consent.
-
-The same server also plays the game: `play` starts it with a local control socket (`world`,
-`creative`, `join` and `offscreen` are optional), and every `horizon-ctl` tool of the selected
-version is offered as `game_<name>`: `game_state`, `game_ui` (every widget of the open screen),
-`game_click`, `game_goto`, `game_break`, `game_inventory`, `game_screenshot` (an image) and the
-rest of [horizon-ctl's commands](../docs/horizon-ctl-commands.md). The launcher runs that
-version's `horizon-ctl mcp` and passes the calls through; while no game runs, they answer with an
-error saying to call `play`.
-
-`horizon-launcher no-ai on` (the Settings page's No AI switch) hides and turns off every AI
-feature: `mcp` and `agent-config` refuse, the game opens no control socket and `horizon-ctl`
-refuses. Every other command keeps working.
-
-The window, the command line and the MCP server all call the same core, `src/backend.rs`.
+`horizon-launcher no-ai on` disables the game’s agent control socket and `horizon-ctl`
+for games that support this setting.
 
 ## Microsoft accounts
 
 The launcher starts the game only while a Microsoft account that owns Minecraft: Java Edition is
-signed in, as other launchers do: without one, Play (Home, instances, `horizon-launcher play`, the
-MCP's `play`) says "Sign in with a Microsoft account that owns Minecraft: Java Edition to play"
+signed in, as other launchers do: without one, Play (Home, instances, or `horizon-launcher play`) says "Sign in with a Microsoft account that owns Minecraft: Java Edition to play"
 and starts nothing. Settings → Accounts signs in: the launcher shows a code, you enter it at
 microsoft.com/link, and the launcher checks that the account owns the game. It asks again at every
 Play, with the token renewal; with no network the last answer stands, and a "doesn't own" blocks
@@ -533,23 +457,11 @@ configured). How it works: [docs/microsoft-account.md](../docs/microsoft-account
 ## Logs and crash reports
 
 The game writes its log to `logs/latest.log` in the game folder (`HORIZON_HOME`, else
-`~/.local/share/horizon`, `~/Library/Application Support/horizon` or `%APPDATA%\horizon`), and
+`~/.local/share/ferrite`, `~/Library/Application Support/ferrite` or `%APPDATA%\ferrite`), and
 archives the previous one at start as `logs/<date>-<n>.log.gz`, as Minecraft does. When it
 crashes it writes `crash-reports/crash-<date>_<time>-client.txt` beside them. When a game the
 launcher started crashes, the Play page says so, with buttons to open or copy the report, open the
-logs folder and report it on Discord; Settings has the logs folder too. A crash report leaves the
-machine only if you turn on crash reports (below).
-
-## Data collection
-
-The first time it opens, the launcher asks whether you want to send performance statistics,
-crash reports, bug reports and benchmark uploads, each on its own switch and all off until you
-turn one on ("Send nothing" is one click). Settings → Data collection changes them any time, shows
-exactly what would be sent (the JSON), and deletes everything sent from your install. It asks
-again only when what is collected changes. The game obeys the same answer, kept in
-`telemetry/consent.json` in the game folder. What waits is sent when the launcher starts and
-closes. Every field, the caps and the format: [docs/telemetry.md](../docs/telemetry.md).
-
+logs folder and report it on Discord; Settings has the logs folder too.
 
 ## Performance log
 
@@ -561,9 +473,7 @@ and OS (read on a thread after the first frame: on Windows those queries take se
 to an issue about the launcher being slow. `horizon-launcher benchmark` measures on purpose: it starts the launcher `--repeats` times (5; the first start is the cold one, as far
 as the OS's file cache allows), switches pages for a few seconds in each, rests 3 seconds to
 measure idle CPU, fetches the release list 3 times, and writes one report there with means and
-95% confidence intervals. Its window has to be on a screen that is awake. Session logs stay on
-your machine; a `benchmark` report is uploaded, dated to the day, only if you allowed benchmark
-uploads ([data collection](../docs/telemetry.md)).
+95% confidence intervals. Its window has to be on a screen that is awake. Session logs and benchmark reports stay on your machine.
 
 Long lists on Mods (results, installed entries, coverage reports and project versions), Versions
 and Patch notes build only nearby rows, including on their first frame. Variable row heights
@@ -616,8 +526,6 @@ bundled so the type is the same on every platform.
 
 ## Screenshots
 
-![Servers](docs/servers.png)
-![Friends over the internet](docs/servers-tailscale.png)
 ![Modpacks](docs/modpacks.png)
 ![Versions](docs/versions.png)
 ![Patch notes](docs/patch-notes.png)

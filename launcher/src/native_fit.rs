@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(fit(OTHER, &p), Fit::OtherRevision { pin: OTHER.into() });
         let said = describe(&fit(OTHER, &p), &p);
         assert!(
-            said.starts_with("Made for another Horizon version, not the Horizon you play."),
+            said.starts_with("Made for another Ferrite version, not the Ferrite you play."),
             "{said}"
         );
     }

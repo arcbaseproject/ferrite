@@ -482,14 +482,6 @@ impl Launcher {
                     crate::glass_toast::open(cx, &dir);
                 }),
         );
-        let discord = self.links.discord.clone();
-        if !discord.is_empty() {
-            actions = actions.child(
-                button("crash-discord", "Report on Discord", Kind::Secondary, &t)
-                    .bg(t.plate)
-                    .on_click(move |_, _, cx| cx.open_url(&discord)),
-            );
-        }
         actions = actions.child(
             button("crash-dismiss", "Dismiss", Kind::Ghost, &t).on_click(cx.listener(
                 |this, _: &ClickEvent, _, cx| {

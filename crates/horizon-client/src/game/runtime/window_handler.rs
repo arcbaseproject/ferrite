@@ -392,11 +392,11 @@ impl ApplicationHandler for Game<'_> {
         let size = self.options.window_size.map(f64::from);
         self.fullscreen = horizon_client::window::FullscreenState::new(fullscreen);
         let attributes =
-            horizon_client::window::with_icon(Window::default_attributes().with_title("Horizon"));
-        // Wayland names the window by its app id, which the horizon.desktop entry matches.
+            horizon_client::window::with_icon(Window::default_attributes().with_title("Ferrite"));
+        // Wayland names the window by its app id, which the ferrite.desktop entry matches.
         #[cfg(target_os = "linux")]
         let attributes = winit::platform::wayland::WindowAttributesExtWayland::with_name(
-            attributes, "horizon", "horizon",
+            attributes, "ferrite", "ferrite",
         );
         // A game an agent started opens without the focus, as splitscreen's windows do, and
         // the person keeps their keyboard and pointer until they click it (`unclaimed_window`).

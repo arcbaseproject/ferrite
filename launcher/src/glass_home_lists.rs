@@ -319,18 +319,8 @@ impl Launcher {
                     .gap(px(8.))
                     .px(px(12.))
                     .pb(px(8.))
-                    .child(self.field(
-                        servers_page::Field::ServerName,
-                        "Minecraft Server",
-                        220.,
-                        cx,
-                    ))
-                    .child(self.field(
-                        servers_page::Field::ServerAddress,
-                        "play.example.com",
-                        300.,
-                        cx,
-                    ))
+                    .child(self.field(fields::Field::ServerName, "Minecraft Server", 220., cx))
+                    .child(self.field(fields::Field::ServerAddress, "play.example.com", 300., cx))
                     .child(ui::solid("server-save", tr("Add"), 44., 14., &t).on_click(
                         cx.listener(|this, _: &ClickEvent, _, cx| {
                             this.add_server();
@@ -478,7 +468,7 @@ fn toggle_add(cx: &mut Context<Launcher>) -> Listener<ClickEvent> {
         this.multiplayer.adding = !this.multiplayer.adding;
         this.multiplayer.error = None;
         if this.multiplayer.adding {
-            this.servers.focus_soon = Some(servers_page::Field::ServerAddress);
+            this.fields.focus_soon = Some(fields::Field::ServerAddress);
         }
         cx.notify();
     }))

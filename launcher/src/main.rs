@@ -3,7 +3,7 @@
 
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
-use horizon_launcher_scenery::{art, glass, rain, scene, sky};
+use horizon_launcher_scenery::{art, glass, rain, sky};
 mod blocks_chrome;
 mod blocks_play;
 mod blocks_settings;
@@ -14,20 +14,17 @@ mod launcher_render;
 mod launcher_setup;
 mod widgets;
 pub(crate) use widgets::*;
-mod agents_page;
 mod blocks;
 mod build_mode;
 mod cli;
-mod cli_tools;
-mod collection;
 mod console;
 mod console_page;
 mod cull;
 mod datapacks_page;
 mod developer_play;
 mod export_page;
+mod fields;
 mod frame;
-mod game_tools;
 mod github_mods_page;
 mod glass_account;
 mod glass_home;
@@ -53,14 +50,12 @@ mod import_page;
 mod instance_icons;
 mod instance_mods;
 mod instances_page;
-mod internet;
 mod jar_launch;
 mod language_page;
 mod launch_page;
 mod line_edit;
 mod location_page;
 mod markdown;
-mod mcp;
 mod microsoft;
 mod mod_icons;
 mod modpacks_page;
@@ -76,7 +71,6 @@ mod new_instance;
 mod notes_cache;
 mod owner_page;
 mod packs_page;
-mod partner;
 mod perf;
 mod picture_cache;
 mod plate;
@@ -84,7 +78,6 @@ mod play_step;
 mod profile_heads;
 mod screenshots_page;
 mod scrollbar;
-mod servers_page;
 #[cfg(windows)]
 mod setup_page;
 mod shell;
@@ -95,7 +88,6 @@ mod switch_page;
 mod theme;
 mod themes_page;
 mod titlebar;
-mod wardrobe_page;
 mod welcome;
 mod while_playing;
 mod window_root;
@@ -115,7 +107,6 @@ use horizon_launcher::instances;
 use horizon_launcher::native_mods;
 use horizon_launcher::native_status;
 use horizon_launcher::storage;
-use horizon_launcher::telemetry;
 use native_consent::PendingConsent;
 use scrollbar::Scrollbar;
 use std::borrow::Cow;
@@ -132,12 +123,6 @@ enum Page {
     Versions,
     /// Mods, resource packs and modpacks (imported ones and the browser's).
     Mods,
-    Servers,
-    /// What the player wears (`wardrobe_page.rs`), with the cosmetics flag on.
-    Wardrobe,
-    /// Cosmetics to try on and buy (`wardrobe_page/shop.rs`), beside the Wardrobe and under the
-    /// same rule. A plain tab: no badge, and it never opens by itself.
-    Shop,
     Settings,
 }
 
@@ -150,9 +135,6 @@ impl Page {
     fn from_env() -> Page {
         let page = match std::env::var("HORIZON_LAUNCHER_PAGE").as_deref() {
             Ok("mods" | "modpacks" | "resourcepacks" | "shaders" | "datapacks") => Page::Mods,
-            Ok("servers") => Page::Servers,
-            Ok("wardrobe") if horizon_cosmetics::forced() => Page::Wardrobe,
-            Ok("shop") if horizon_cosmetics::forced() => Page::Shop,
             Ok("versions") => Page::Versions,
             Ok("settings") => Page::Settings,
             _ => Page::Play,
@@ -167,24 +149,18 @@ impl Page {
 
     /// Every page, with its name and icon: the top bar shows all but Settings, which has its
     /// own button.
-    const ALL: [(Page, &'static str, &'static str); 7] = [
+    const ALL: [(Page, &'static str, &'static str); 4] = [
         (Page::Play, "Home", "home"),
         (Page::Mods, "Mods", "package"),
-        (Page::Servers, "Servers", "server"),
-        (Page::Wardrobe, "Wardrobe", "user"),
-        (Page::Shop, "Shop", "bag"),
         (Page::Versions, "Versions", "archive"),
         (Page::Settings, "Settings", "sliders"),
     ];
 
-    /// The pages the top bar shows: all but Settings, and the Wardrobe and the Shop only when
-    /// `wardrobe` (`Launcher::wardrobe_shown`).
-    fn in_top_bar(wardrobe: bool) -> impl Iterator<Item = (Page, &'static str, &'static str)> {
-        Self::ALL.into_iter().filter(move |(page, ..)| match page {
-            Page::Settings => false,
-            Page::Wardrobe | Page::Shop => wardrobe,
-            _ => true,
-        })
+    /// The pages the top bar shows: all but Settings.
+    fn in_top_bar() -> impl Iterator<Item = (Page, &'static str, &'static str)> {
+        Self::ALL
+            .into_iter()
+            .filter(|(page, ..)| *page != Page::Settings)
     }
 }
 
@@ -396,20 +372,6 @@ struct Launcher {
     /// Where the mouse went down to close a menu by pressing outside it, so that the
     /// same press, ending on the menu's own button, doesn't open it again.
     menu_closed_at: Option<Point<Pixels>>,
-    /// The Wardrobe page's account and outfit (`wardrobe_page.rs`).
-    wardrobe: Option<wardrobe_page::Wardrobe>,
-    /// Name tag styles' marks; they outlive the account's `wardrobe`.
-    wardrobe_marks: wardrobe_page::Marks,
-    /// Ask the service again on the next draw of the Wardrobe (set by each visit).
-    wardrobe_reload: bool,
-    /// The Shop page's basket and choices (`wardrobe_page/shop.rs`).
-    shop: wardrobe_page::Shop,
-    /// The cosmetics service's last word on the founder set's window (`GET /v1/shop`): whether
-    /// the top bar has the Wardrobe page with cosmetics off (`wardrobe_shown`).
-    shop_status: Option<horizon_launcher::wardrobe::Claim>,
-    /// The selected account's own answer on it from its last Wardrobe visit, kept on disk (a
-    /// preview the service grants it, its claim).
-    shop_kept: Option<horizon_launcher::wardrobe::Claim>,
     /// Work the look out again on the next frame (a launcher theme put on or taken off).
     restyle: bool,
     /// Why the last picture for Home's background was refused.
@@ -436,10 +398,8 @@ struct Launcher {
     /// The folder the running game keeps its settings in: the game home, or a modpack's.
     client_home: Option<std::path::PathBuf>,
     crash: Option<Crash>,
-    /// The Servers page (`servers_page.rs`).
-    servers: servers_page::Servers,
-    /// Its Friends over the internet panel (`internet.rs`).
-    internet: internet::Internet,
+    /// Text fields' contents and focus (`fields.rs`).
+    fields: fields::Fields,
     /// The window's own focus, so Tab reaches the controls when nothing else has the keyboard.
     /// The palette (⌘K), while open (`glass_palette`).
     palette: Option<glass_palette::Palette>,
@@ -501,14 +461,10 @@ struct Launcher {
     proxy_input: line_edit::LineEdit,
     proxy_focused: bool,
     proxy_focus: FocusHandle,
-    /// Opt-in data collection: the player's answer and Settings' section (`collection`).
-    collection: collection::Collection,
-    /// Settings' "Connect an AI agent" (`agents_page`).
-    agents: agents_page::AgentsUi,
+    /// The first-run welcome's scrolling list.
+    welcome_scroll: Scrollbar,
     /// How many play Horizon now, while the server answers ("N playing now" on the Play page).
-    playing: Option<u64>,
     /// How many play on the official server now, while it answers ("M on the official SMP").
-    official_players: Option<u64>,
     tx: Sender<Msg>,
     rx: Receiver<Msg>,
     _appearance: Subscription,
@@ -598,13 +554,8 @@ struct Launcher {
     aside: while_playing::Aside,
     /// The selected instance's desktop shortcut (`shortcut_page.rs`).
     shortcuts: shortcut_page::Shortcuts,
-    /// The player's servers, for the sidebar until the Servers page has read them.
-    side_servers: Vec<horizon_launcher::servers::Entry>,
     /// The pixel art made for this window (`art.rs`), and pictures downloaded by URL.
     sky: gpui::Entity<sky::SkyView>,
-    /// The pixel sunset of the new design (dark appearance): its own view, so a frame of it
-    /// alone redraws nothing else.
-    scene: gpui::Entity<scene::Scene>,
     /// Hypr Neon's rain over its black night (`rain.rs`).
     rain: gpui::Entity<rain::Rain>,
     /// What is behind the launcher, drawn as its sibling (`window_root.rs`).
@@ -617,11 +568,9 @@ struct Launcher {
 
 actions!(horizon_launcher, [Quit, CloseWindow]);
 
-/// What closing the last window does: stop the servers this launcher started, send the telemetry,
-/// exit. A game that is running keeps running. Cmd+Q goes through here too.
+/// What closing the last window does: exit. A game that is running keeps running. Cmd+Q goes
+/// through here too.
 fn shut_down(cx: &mut App) {
-    servers_page::stop_on_quit();
-    telemetry::send_before_exit();
     // A downloaded launcher update goes in once this process has exited; the game keeps running.
     horizon_launcher::update_handoff::on_close();
     cx.quit()
@@ -655,7 +604,7 @@ fn page_after_startup(page: Page, data_folder_failed: bool) -> Page {
 fn menus() -> Vec<Menu> {
     vec![
         Menu {
-            name: "Horizon Launcher".into(),
+            name: "Ferrite Launcher".into(),
             items: vec![MenuItem::action(tr("Quit Horizon Launcher"), Quit)],
             disabled: false,
         },
@@ -908,10 +857,10 @@ mod tests {
     #[test]
     fn the_app_menu_has_quit() {
         let menus = super::menus();
-        assert_eq!(menus[0].name, "Horizon Launcher");
+        assert_eq!(menus[0].name, "Ferrite Launcher");
         assert!(matches!(
             &menus[0].items[0],
-            gpui::MenuItem::Action { name, .. } if name == "Quit Horizon Launcher"
+            gpui::MenuItem::Action { name, .. } if name == "Quit Ferrite Launcher"
         ));
     }
 

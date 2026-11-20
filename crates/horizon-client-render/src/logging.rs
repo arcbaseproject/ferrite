@@ -90,14 +90,14 @@ fn shared_dir_of(
 }
 
 /// Where the launcher runs the game and keeps its saves: `--home`, else `HORIZON_HOME`, else
-/// `horizon` in the platform data folder (launcher/src/backend.rs `game_home`).
+/// `ferrite` in the platform data folder (launcher/src/backend.rs `game_home`).
 pub fn game_home() -> PathBuf {
     if let Some(home) = HOME.get() {
         return home.clone();
     }
     match std::env::var_os("HORIZON_HOME").filter(|h| !h.is_empty()) {
         Some(h) => PathBuf::from(h),
-        None => data_dir().join("horizon"),
+        None => data_dir().join("ferrite"),
     }
 }
 

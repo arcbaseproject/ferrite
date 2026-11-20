@@ -84,7 +84,7 @@ impl LaunchArguments {
                     |(_, value)| value.map(OsStr::to_owned),
                 )
         };
-        let default_home = data_dir_with(env).join("horizon");
+        let default_home = data_dir_with(env).join("ferrite");
         let args: Result<Vec<_>, _> = command
             .get_args()
             .map(|arg| {
@@ -221,11 +221,11 @@ mod tests {
             .env("XDG_DATA_HOME", cwd.join("data"));
         let launch = LaunchArguments::for_command(&command).unwrap();
         let expected = if cfg!(windows) {
-            cwd.join("roaming/horizon")
+            cwd.join("roaming/ferrite")
         } else if cfg!(target_os = "macos") {
-            cwd.join("user/Library/Application Support/horizon")
+            cwd.join("user/Library/Application Support/ferrite")
         } else {
-            cwd.join("data/horizon")
+            cwd.join("data/ferrite")
         };
         assert_eq!(launch.context.home, expected);
         command.args(["--help", "--missing-value"]);

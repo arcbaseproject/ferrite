@@ -15,9 +15,7 @@ impl Launcher {
         self.perf.tick();
         match self.bench.as_mut().map(|b| b.tick(&self.perf)) {
             Some(perf::Step::Go(page)) => {
-                let pages: Vec<Page> = (Page::ALL.iter().map(|p| p.0))
-                    .filter(|p| !matches!(p, Page::Wardrobe | Page::Shop) || self.wardrobe_shown())
-                    .collect();
+                let pages: Vec<Page> = Page::ALL.iter().map(|p| p.0).collect();
                 self.go(pages[page % pages.len()]);
                 changed = true;
             }
@@ -58,7 +56,6 @@ impl Launcher {
                 Msg::Links(links) => {
                     // The official server may have moved: its list entry and its count follow.
                     self.multiplayer.stale();
-                    telemetry::set_official_server(&links.official_server);
                     self.links = links;
                     self.follow_min_launcher(cx);
                 }
@@ -108,8 +105,6 @@ impl Launcher {
                         Err(e) => self.sign_in_state = Some(SignInState::Done(Err(e))),
                     }
                 }
-                Msg::Playing(playing) => self.playing = playing,
-                Msg::OfficialPlayers(players) => self.official_players = players,
                 Msg::JavaGame(id, home, cmd) => {
                     self.starting_client = None;
                     self.starting_instance = None;
@@ -502,7 +497,6 @@ impl Launcher {
         }
         // A start that ended (the game started, or it failed) is on no step.
         self.play_step.settle(self.starting_client.is_some());
-        changed |= self.servers_tick();
         changed |= self.mods_tick();
         changed |= self.github_tick();
         changed |= self.native_log_read(cx);

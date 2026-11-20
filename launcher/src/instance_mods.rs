@@ -11,10 +11,10 @@ use super::*;
 use crate::plate::alpha;
 use crate::shell::{c, Action};
 use build_mode::ModKind;
+use fields::Field;
 use horizon_launcher::browser::{
     horizon, images, installed, java, modrinth, Kind as PackKind, SourceId,
 };
-use servers_page::Field;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -522,7 +522,7 @@ impl Launcher {
             _ => tr("Horizon mods").to_string(),
         };
         let filter = self
-            .servers
+            .fields
             .value(Field::InstanceModsFilter)
             .trim()
             .to_lowercase();

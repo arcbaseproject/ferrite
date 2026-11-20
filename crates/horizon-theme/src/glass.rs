@@ -7,13 +7,14 @@
 //! player's own accent comes out as it does on the website.
 
 /// The mockup's defaults: accent, how much white the plates take, and their blur in px.
-pub const ACCENT: u32 = 0x6b4bff;
+// Ferrite's "forged iron" look: molten-orange accent over graphite.
+pub const ACCENT: u32 = 0xff6a1f;
 pub const TINT: f32 = 0.06;
 pub const BLUR: f32 = 24.;
 /// Behind the scene before it is drawn.
-pub const PAGE: u32 = 0x0a0919;
+pub const PAGE: u32 = 0x0c0c0d;
 /// The dark text on a light accent, and on the white buttons.
-pub const ON_LIGHT: u32 = 0x100a1f;
+pub const ON_LIGHT: u32 = 0x141210;
 /// A running game or server, and a ready instance.
 pub const LIVE: u32 = 0x4ade80;
 /// Busy (pulsing) and partly-working states.
@@ -25,29 +26,29 @@ pub const DANGER_HOVER: u32 = 0xff6b6b;
 pub const DISCORD: u32 = 0x5865f2;
 pub const DISCORD_HOVER: u32 = 0x4752c4;
 /// The scrim under dialogs and the palette: this colour at 50 %.
-pub const SCRIM: u32 = 0x07050f;
+pub const SCRIM: u32 = 0x060606;
 
 /// Text families: Geist for everything, Bricolage for page, instance and dialog names.
 pub const FONT: &str = crate::FONT;
-pub const DISPLAY_FONT: &str = "Bricolage Grotesque Display";
-pub const HEADING_FONT: &str = "Bricolage Grotesque Heading";
+pub const DISPLAY_FONT: &str = crate::FONT;
+pub const HEADING_FONT: &str = crate::FONT;
 
-/// Corners, in px. No step anywhere: everything is round.
+/// Corners, in px: tight, machined edges.
 pub mod radius {
     /// Dialogs.
-    pub const MODAL: f32 = 28.;
+    pub const MODAL: f32 = 14.;
     /// Panels (the sidebar, cards, the tabbed panel).
-    pub const PANEL: f32 = 20.;
+    pub const PANEL: f32 = 10.;
     /// Menus and popovers; choice cards in dialogs.
-    pub const POPOVER: f32 = 16.;
+    pub const POPOVER: f32 = 8.;
     /// The Play group, the big icon buttons, the top bar's tab strip.
-    pub const LARGE: f32 = 14.;
+    pub const LARGE: f32 = 8.;
     /// Rows, chips, fields in dialogs.
-    pub const ROW: f32 = 12.;
+    pub const ROW: f32 = 6.;
     /// Buttons, tabs, small fields, menu rows.
-    pub const CONTROL: f32 = 10.;
+    pub const CONTROL: f32 = 6.;
     /// The sidebar rows' ⋯ button.
-    pub const SMALL: f32 = 9.;
+    pub const SMALL: f32 = 5.;
 }
 
 /// How opaque white text is in each role (the mockup's `text-white/NN`).
@@ -102,7 +103,7 @@ impl Glass {
     /// `--base: color-mix(in oklab, accent 10%, #14111d)`, and `.hzl-glass`'s background
     /// `color-mix(in srgb, white tint, color-mix(in oklab, base 22%, transparent))`.
     pub fn new(accent: u32, tint: f32, blur: f32) -> Glass {
-        let base = mix_oklab(accent, 0x14111d, 0.10);
+        let base = mix_oklab(accent, 0x141416, 0.06);
         // White at `tint` over the base at 22 %, mixed with premultiplied alpha as CSS does.
         let base_alpha = 0.22;
         let alpha = tint + (1. - tint) * base_alpha;
@@ -250,9 +251,11 @@ mod tests {
     /// canvas for the sRGB bytes): an independent check of the OKLab maths and the plate's mix.
     #[test]
     fn mixes_match_the_browser() {
-        let g = Glass::default_look();
-        let soft = oklab(g.accent_soft);
-        let mixed = [0, 1, 2].map(|i| oklab(ACCENT)[i] * 0.52 + oklab(0xffffff)[i] * 0.48);
+        // Checked against Chrome with Horizon's violet; the maths don't depend on Ferrite's accent.
+        const VIOLET: u32 = 0x6b4bff;
+        let soft_rgb = mix_oklab(VIOLET, 0xffffff, 0.52);
+        let soft = oklab(soft_rgb);
+        let mixed = [0, 1, 2].map(|i| oklab(VIOLET)[i] * 0.52 + oklab(0xffffff)[i] * 0.48);
         for (i, want) in [0.772018, 0.0291158, -0.12693].into_iter().enumerate() {
             assert!(
                 (mixed[i] - want).abs() < 1e-3,
@@ -261,20 +264,18 @@ mod tests {
         }
         // Chrome clips the out-of-gamut blue the same way.
         assert!(
-            close(g.accent_soft, 0xa9a9ff),
+            close(soft_rgb, 0xa9a9ff),
             "accent-soft {:06x} {soft:?}",
-            g.accent_soft
+            soft_rgb
         );
-        assert!(close(g.base, 0x1b1830), "base {:06x}", g.base);
-        // color(srgb 0.30732 0.296469 0.370862 / 0.2668)
-        assert!(close(g.plate, 0x4e4c5f), "plate {:06x}", g.plate);
-        assert!((g.plate_alpha - 0.2668).abs() < 1e-4);
+        assert!(close(mix_oklab(VIOLET, 0x14111d, 0.10), 0x1b1830));
     }
 
     #[test]
     fn a_light_accent_takes_dark_labels() {
         assert_eq!(Glass::new(0xf2c46b, TINT, BLUR).on_accent, ON_LIGHT);
-        assert_eq!(Glass::default_look().on_accent, 0xffffff);
+        // Ferrite's molten orange is light enough for dark labels.
+        assert_eq!(Glass::default_look().on_accent, ON_LIGHT);
     }
 
     /// Mid-luminance accents took white labels below 4.5:1 under the old 0.4 cut-off.

@@ -104,13 +104,6 @@ impl LineEdit {
         *self = LineEdit::new(text, self.max, self.visible);
     }
 
-    /// The text, leaving the field empty.
-    pub(super) fn take(&mut self) -> String {
-        let text = self.text.clone();
-        self.set(String::new());
-        text
-    }
-
     /// How many characters the box shows.
     pub(super) fn show(&mut self, visible: usize) {
         self.visible = visible;
@@ -718,8 +711,6 @@ mod tests {
         e.set("Other".into());
         e.key("z", None, true, false);
         assert_eq!(e.text(), "Other");
-        assert_eq!(e.take(), "Other");
-        assert_eq!(e.text(), "");
     }
 
     #[test]

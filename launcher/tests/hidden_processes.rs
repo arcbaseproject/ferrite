@@ -89,12 +89,6 @@ fn cli_keeps_redirected_stdout_and_stderr() {
 }
 
 #[test]
-fn mcp_keeps_its_stdio_transport() {
-    let executable = Path::new(env!("CARGO_BIN_EXE_horizon-launcher"));
-    assert!(horizon_launcher::agents::self_test(executable).unwrap() > 0);
-}
-
-#[test]
 fn desktop_executable_uses_the_windows_gui_subsystem() {
     const PE_HEADER_POINTER: usize = 0x3c;
     const PE_OPTIONAL_HEADER_OFFSET: usize = 24;

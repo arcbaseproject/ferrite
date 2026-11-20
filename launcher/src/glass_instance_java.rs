@@ -3,6 +3,7 @@
 //! loaders, each with its logo, as many as `loaders::Kind` knows.
 use super::*;
 use crate::glass_ui::{self as ui, white};
+use fields::Field;
 use glass_instance::{
     choice, choice_text, letter_tile, list_box, list_choice, loaders, section, tick, tile_image,
 };
@@ -11,7 +12,6 @@ use horizon_launcher::loaders::Loader;
 use horizon_launcher::minecraft_versions::Kind as VersionKind;
 use horizon_theme::glass::{fill, ink, radius};
 use new_instance::{NewKind, VersionList};
-use servers_page::Field;
 
 /// Mojang versions listed at most: the search finds the others.
 const ROWS: usize = 60;
@@ -24,11 +24,7 @@ impl Launcher {
         let Some(choice) = self.instances.dialog.as_ref().map(|d| d.java.clone()) else {
             return div();
         };
-        let typed = self
-            .servers
-            .value(Field::InstanceVersion)
-            .trim()
-            .to_string();
+        let typed = self.fields.value(Field::InstanceVersion).trim().to_string();
         let search = typed.to_lowercase();
         let chosen = self.draft_minecraft();
         let filter = |id: &'static str, label: &'static str, on: bool| {

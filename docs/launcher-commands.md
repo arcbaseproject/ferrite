@@ -1,10 +1,6 @@
 # Launcher commands
 
-<!-- Generated from launcher/src/cli.rs by cli_tools::markdown(); a test fails when this file is out of date. Update it with: HORIZON_WRITE_DOCS=1 cargo test --manifest-path launcher/Cargo.toml the_launcher_reference -->
-
-Every command of `horizon-launcher`, and the tool `horizon-launcher mcp` offers for it. A tool's arguments are the command's, in snake_case. A tool runs the command with `--json` and returns what it printed. The tools that change the player's things for good need `confirm: true`. The tools that send something or reach other people say "only when the player asks". The game's own tools, `game_*`, are in [horizon-ctl-commands.md](horizon-ctl-commands.md). For unsigned developer installations only, `HORIZON_LAUNCHER_DEVELOPER_OFFLINE=1` enables account-free Play. Only the exact value `1` enables it. The installed base must have persisted developer provenance, and the selected game must advertise `--developer-single-player` through `--launch-api`; older games must be rebuilt and reinstalled. Signed releases, Nightlies and their native descendants keep the account check. This mode supplies no session, blocks normal external connections and LAN hosting, and preserves managed launch leases, instance settings and unsigned labels. It is not a sandbox for native mods. If direct execution reports unregistered cache directories, use Horizon Launcher Play from the same launcher data directory with the intended instance and installed version (`horizon-launcher play --instance <instance> --version <tag>`).
-
-With No AI on, `mcp` and `agent-config` are hidden and refuse; every other command stays. See [agent-control.md](agent-control.md#no-ai).
+Command reference for the Ferrite launcher. For unsigned developer installations only, `HORIZON_LAUNCHER_DEVELOPER_OFFLINE=1` enables account-free Play. Only the exact value `1` enables it. The installed base must have persisted developer provenance, and the selected game must advertise `--developer-single-player` through `--launch-api`; older games must be rebuilt and reinstalled. Signed releases, Nightlies and their native descendants keep the account check. This mode supplies no session, blocks normal external connections and LAN hosting, and preserves managed launch leases, instance settings and unsigned labels. It is not a sandbox for native mods. If direct execution reports unregistered cache directories, use Horizon Launcher Play from the same launcher data directory with the intended instance and installed version (`horizon-launcher play --instance <instance> --version <tag>`).
 
 ## `horizon-launcher completions`
 
@@ -14,8 +10,6 @@ Write a shell completion script to stdout.
 
 - `SHELL` (bash, elvish, fish, powershell, zsh)
 
-MCP: none: the player's switch.
-
 ## `horizon-launcher versions`
 
 List Horizon releases, or the installed versions.
@@ -23,8 +17,6 @@ List Horizon releases, or the installed versions.
     horizon-launcher versions
 
 - `--installed`: Only the versions installed here (no network)
-
-MCP: `versions`.
 
 ## `horizon-launcher install`
 
@@ -34,22 +26,18 @@ Download and install a release (a tag such as v2026.10.13, or "latest").
 
 - `TAG`
 
-MCP: `install`.
-
 ## `horizon-launcher developer-install`
 
 Install a local unsigned developer build from a trusted checkout.
 
     horizon-launcher developer-install --program <PROGRAM> --trust-unsigned <CHECKOUT>
 
-- `CHECKOUT`: The trusted clean Horizon checkout to package
+- `CHECKOUT`: The trusted clean Ferrite checkout to package
 - `--program`: The real horizon-client executable built from that committed checkout
 - `--trust-unsigned`: Allow executing this checkout's build code and unsigned game with your rights
 
 Example: horizon-launcher developer-install CHECKOUT --program CHECKOUT/target/debug/horizon-client --trust-unsigned
 This executes the checkout's build code and an unsigned game with your rights. Trust both before continuing.
-
-MCP: none: the player's switch.
 
 ## `horizon-launcher remove`
 
@@ -58,8 +46,6 @@ Remove an installed version.
     horizon-launcher remove <TAG>
 
 - `TAG`
-
-MCP: `remove`, needs `confirm: true`.
 
 ## `horizon-launcher import-build`
 
@@ -75,8 +61,6 @@ The program must match this computer's executable format and carry the exact `ho
 identity signature embedded by ordinary and launcher-generated games. It carries no mod API level or build id,
 and is not a signature of authenticity. Unmarked programs are refused.
 
-MCP: none: the player's switch.
-
 ## `horizon-launcher prepare`
 
 Prepare a version's resources from your own Minecraft install, or from Mojang.
@@ -86,8 +70,6 @@ Prepare a version's resources from your own Minecraft install, or from Mojang.
 - `--minecraft`: The game folder of the official launcher, Prism Launcher, MultiMC, the Modrinth App, ATLauncher or GDLauncher (default: the launcher's, then every launcher's default)
 - `--download`: Download Minecraft from Mojang for the signed-in account that owns it, instead of using an install
 - `--version`: The installed version (default: the selected one)
-
-MCP: `prepare`.
 
 ## `horizon-launcher play`
 
@@ -105,8 +87,6 @@ Start the client (needs a signed-in Microsoft account that owns Minecraft: Java 
 - `--arg`: An extra argument for the game, passed through as-is (repeatable), for example --server-thread
 - `--account`: Play this launch as this signed-in account (its name or UUID), without changing the one `account select` picked: several games can play as several accounts at once
 
-MCP: `play`, then the `game_*` tools.
-
 ## `horizon-launcher server`
 
 Run a dedicated server here; type commands into its console.
@@ -118,8 +98,6 @@ Run a dedicated server here; type commands into its console.
 - `--version`
 - `--accept-eula`: Agree to the Minecraft EULA (https://aka.ms/MinecraftEULA)
 
-MCP: `server`, `server_command`, `server_log`, `server_stop`.
-
 ## `horizon-launcher storage`
 
 Show disposable storage by category as JSON. Builds must be idle.
@@ -127,8 +105,6 @@ Show disposable storage by category as JSON. Builds must be idle.
     horizon-launcher storage
 
 - `--clear`: Request cleanup of build-files, prebuilt-games, spare-game-builds, rust-compiler, other-caches or all rows; game-accessible caches refuse cleanup without enforceable lifetime exclusion
-
-MCP: `storage`.
 
 ## `horizon-launcher native-lock`
 
@@ -138,8 +114,6 @@ Generate the registry-only Cargo.lock for one native mod, without executing mod 
 
 - `FOLDER`
 - `--update-lock`: Explicitly replace an existing lock with newly resolved registry pins
-
-MCP: `native_lock`.
 
 ## `horizon-launcher native-build`
 
@@ -160,8 +134,6 @@ Native mods (docs/modding/src/how-to/native-mods.md): compile flat Rust mod proj
 - `--profile` (optimized): Native mods use the pinned SDK's optimized compilation settings. The game is never rebuilt by a mod build
 - `--back-up-worlds`: When a mod this build can't use was saved into the instance's worlds, back those worlds up (into the game folder's backups/) and build without it. Without this the build stops and names the worlds, leaving the instance as it is
 
-MCP: none: the player's switch.
-
 ## `horizon-launcher notes`
 
 Show a release's patch notes (default: the newest).
@@ -170,23 +142,17 @@ Show a release's patch notes (default: the newest).
 
 - `TAG`
 
-MCP: `notes`.
-
 ## `horizon-launcher links`
 
 Show the website, roadmap and documentation links.
 
     horizon-launcher links
 
-MCP: `links`.
-
 ## `horizon-launcher account list`
 
 The signed-in accounts and which one plays.
 
     horizon-launcher account list
-
-MCP: `account_list`.
 
 ## `horizon-launcher account sign-in`
 
@@ -196,8 +162,6 @@ Sign in with a Microsoft account in your browser (device code). Play needs one t
 
 - `--for`: Sign this account (name or UUID) in again: another Microsoft account is refused and who plays stays the same
 
-MCP: `account_sign_in`.
-
 ## `horizon-launcher account refresh`
 
 Renew an account's session now, even when its access token is still fresh.
@@ -205,8 +169,6 @@ Renew an account's session now, even when its access token is still fresh.
     horizon-launcher account refresh <WHO>
 
 - `WHO`
-
-MCP: `account_refresh`.
 
 ## `horizon-launcher account session`
 
@@ -216,8 +178,6 @@ Renew an account's session for a game already running: prints the read-once sess
 
 - `WHO`
 
-MCP: none: the game's own session handoff.
-
 ## `horizon-launcher account sign-out`
 
 Sign out: the account's tokens leave the keychain (and the secrets file, where it kept them).
@@ -226,8 +186,6 @@ Sign out: the account's tokens leave the keychain (and the secrets file, where i
 
 - `WHO`: Its name or UUID
 
-MCP: `account_sign_out`, needs `confirm: true`.
-
 ## `horizon-launcher account select`
 
 Play as this account.
@@ -235,8 +193,6 @@ Play as this account.
     horizon-launcher account select <WHO>
 
 - `WHO`
-
-MCP: `account_select`.
 
 ## `horizon-launcher settings`
 
@@ -247,8 +203,6 @@ Show the launcher's settings, or set one (the Settings page): selected-version T
 - `KEY` (selected-version, minecraft-dir, server-dir, install-new-versions, prune-old-versions, keep-versions, opening-animation, game-architecture, proxy, while-playing, language, accent, background, cache-limit-gib)
 - `VALUE`: The new value (with KEY)
 
-MCP: `settings`.
-
 ## `horizon-launcher game-args`
 
 Show or set the extra arguments the game starts with (for example --server-thread); quotes group a word with spaces in it.
@@ -256,8 +210,6 @@ Show or set the extra arguments the game starts with (for example --server-threa
     horizon-launcher game-args [ARGS]
 
 - `ARGS`: Omit to show the current arguments
-
-MCP: `game_args`.
 
 ## `horizon-launcher share-log`
 
@@ -267,8 +219,6 @@ Upload an instance's latest.log to mclo.gs (a paste service for Minecraft logs) 
 
 - `--instance`: The instance (default: the selected one)
 
-MCP: `share_log`, only when the player asks.
-
 ## `horizon-launcher unshare-log`
 
 Delete a log shared with share-log: the "<id>:<token>" it printed.
@@ -276,8 +226,6 @@ Delete a log shared with share-log: the "<id>:<token>" it printed.
     horizon-launcher unshare-log <SHARED>
 
 - `SHARED`
-
-MCP: `unshare_log`, needs `confirm: true`.
 
 ## `horizon-launcher logs`
 
@@ -288,8 +236,6 @@ Print the end of the game's log (logs/latest.log in the game folder), or its new
 - `--lines`: How many lines of latest.log
 - `--crash`: The newest crash report instead
 
-MCP: `logs`.
-
 ## `horizon-launcher update`
 
 Look for a newer Horizon release and launcher, and install them.
@@ -297,8 +243,6 @@ Look for a newer Horizon release and launcher, and install them.
     horizon-launcher update
 
 - `--check`: Only report what is available
-
-MCP: `update`.
 
 ## `horizon-launcher desktop-entry`
 
@@ -308,101 +252,11 @@ Linux: put Horizon in the applications menu (an entry and the icon, under $XDG_D
 
 - `--remove`: Remove the entry and the icon, and stop adding them back
 
-MCP: `desktop_entry`.
-
-## `horizon-launcher bug-report`
-
-Write a bug report to a file you attach to the issue by hand; nothing is sent (docs/telemetry.md).
-
-    horizon-launcher bug-report <TEXT>
-
-- `TEXT`
-- `--log`: Add the end of the game's log (names and worlds hidden, without chat)
-
-MCP: `bug_report`.
-
-## `horizon-launcher data status`
-
-What is allowed, the install ID and how many items wait (the default).
-
-    horizon-launcher data status
-
-MCP: `data_status`.
-
-## `horizon-launcher data allow`
-
-Turn kinds on: performance, crashes, bugs, benchmarks, or all.
-
-    horizon-launcher data allow <KINDS>...
-
-- `KINDS`
-
-MCP: `data_allow`, only when the player asks.
-
-## `horizon-launcher data deny`
-
-Turn kinds off: performance, crashes, bugs, benchmarks, or all.
-
-    horizon-launcher data deny <KINDS>...
-
-- `KINDS`
-
-MCP: `data_deny`.
-
-## `horizon-launcher data show`
-
-Print exactly what would be sent.
-
-    horizon-launcher data show
-
-MCP: `data_show`.
-
-## `horizon-launcher data delete`
-
-Delete everything sent from here, and what waits, and take a new install ID.
-
-    horizon-launcher data delete
-
-MCP: `data_delete`, needs `confirm: true`.
-
-## `horizon-launcher data send`
-
-Send what is waiting now.
-
-    horizon-launcher data send
-
-MCP: `data_send`, only when the player asks.
-
-## `horizon-launcher data bug`
-
-Send a bug report you write; it is printed first, as it would leave.
-
-    horizon-launcher data bug <TEXT>
-
-- `TEXT`
-- `--log`: Add the end of the game's log (scrubbed, without chat)
-- `--yes`: Send without asking
-
-MCP: `data_bug`, only when the player asks.
-
-## `horizon-launcher data benchmark`
-
-Upload a benchmark report (docs/benchmark-report.md); it is printed first.
-
-    horizon-launcher data benchmark <FILE>
-
-- `FILE`
-- `--yes`
-
-MCP: `data_benchmark`, only when the player asks.
-
 ## `horizon-launcher instance list`
 
 The instances, each with its game folder (* = the one Play starts).
 
     horizon-launcher instance list
-
-MCP: `instance_list`.
 
 ## `horizon-launcher instance create`
 
@@ -416,8 +270,6 @@ Make an instance: empty but for your options and name, or a copy of another one'
 - `--loader`: With this mod loader: fabric, quilt, forge or neoforge
 - `--loader-version`: The loader's version (default: its newest stable one)
 
-MCP: `instance_create`.
-
 ## `horizon-launcher instance versions`
 
 The versions of Minecraft: Java Edition a Java instance can play, the newest first.
@@ -426,8 +278,6 @@ The versions of Minecraft: Java Edition a Java instance can play, the newest fir
 
 - `--snapshots`: Snapshots too
 - `--old`: Old betas and alphas too
-
-MCP: `instance_versions`.
 
 ## `horizon-launcher instance java`
 
@@ -442,8 +292,6 @@ A Java instance's Java: its own Java home or the automatic pick, memory and JVM 
 - `--args`: Extra JVM arguments (one string; "" clears them)
 - `--window`: The game window's size, as 1280x720; "default" goes back to the game's own
 
-MCP: `instance_java`.
-
 ## `horizon-launcher instance loader`
 
 A Java instance's mod loader: fabric, quilt, forge or neoforge, or none. --list shows its versions.
@@ -455,8 +303,6 @@ A Java instance's mod loader: fabric, quilt, forge or neoforge, or none. --list 
 - `--version`: The loader's version (default: its newest stable one)
 - `--list`: List the loader's versions for the instance's Minecraft instead
 
-MCP: `instance_loader`.
-
 ## `horizon-launcher instance rename`
 
 Rename an instance (its folder stays).
@@ -466,8 +312,6 @@ Rename an instance (its folder stays).
 - `INSTANCE`
 - `NAME`
 
-MCP: `instance_rename`.
-
 ## `horizon-launcher instance delete`
 
 Delete an instance: its folder (worlds, options, packs) goes to the Trash, where you can get it back. Horizon's own instance stays.
@@ -475,8 +319,6 @@ Delete an instance: its folder (worlds, options, packs) goes to the Trash, where
     horizon-launcher instance delete <INSTANCE>
 
 - `INSTANCE`
-
-MCP: `instance_delete`.
 
 ## `horizon-launcher instance icon`
 
@@ -487,8 +329,6 @@ Set an instance's icon: a block or item name from your prepared files (grass_blo
 - `INSTANCE`
 - `ICON`
 
-MCP: `instance_icon`.
-
 ## `horizon-launcher instance group`
 
 Put an instance in a sidebar group, or take it out with no group.
@@ -498,8 +338,6 @@ Put an instance in a sidebar group, or take it out with no group.
 - `INSTANCE`
 - `GROUP`
 
-MCP: `instance_group`.
-
 ## `horizon-launcher instance select`
 
 Make Play start this instance.
@@ -507,8 +345,6 @@ Make Play start this instance.
     horizon-launcher instance select <INSTANCE>
 
 - `INSTANCE`
-
-MCP: `instance_select`.
 
 ## `horizon-launcher instance version`
 
@@ -518,8 +354,6 @@ Keep an instance on one installed Horizon version, or "latest" to follow updates
 
 - `INSTANCE`
 - `VERSION`
-
-MCP: `instance_version`.
 
 ## `horizon-launcher instance export`
 
@@ -531,8 +365,6 @@ Export an instance (or a port) to share: its settings, packs, Horizon mods and t
 - `--format` (mrpack, zip)
 - `--world`: A world to put in it (its name or folder); repeat for more
 - `--out`: Where to write it (default: "<name>.mrpack" in the current folder)
-
-MCP: `instance_export`.
 
 ## `horizon-launcher instance launch`
 
@@ -549,8 +381,6 @@ Show or set what runs around an instance's game: a shell command before it (the 
 - `--mangohud`: Linux: MangoHud's overlay, on or off
 - `--dedicated-gpu`: Linux: the dedicated graphics card (DRI_PRIME, or NVIDIA's offload), on or off
 
-MCP: `instance_launch`, needs `confirm: true`.
-
 ## `horizon-launcher instance shortcut`
 
 Put a shortcut on the desktop that plays an instance (`play --instance`): a .desktop file (also in the applications menu) on Linux, an app on macOS, a .lnk on Windows.
@@ -559,8 +389,6 @@ Put a shortcut on the desktop that plays an instance (`play --instance`): a .des
 
 - `INSTANCE`: The instance (default: the selected one)
 - `--remove`: Move the instance's shortcuts to the trash instead
-
-MCP: `instance_shortcut`.
 
 ## `horizon-launcher instance import`
 
@@ -572,8 +400,6 @@ Import what a file is, as dropping it on the window does: a shared instance (a .
 - `--instance`: The instance a pack goes into
 - `--java`: A .mrpack becomes a Minecraft: Java Edition instance with its Minecraft version, mod loader, mods and overrides, instead of a Horizon instance or a Modpacks import
 
-MCP: `instance_import`.
-
 ## `horizon-launcher instance others`
 
 List the instances other launchers keep (Prism Launcher, MultiMC, the official launcher, the CurseForge app, the Modrinth App), read without changing anything there.
@@ -581,8 +407,6 @@ List the instances other launchers keep (Prism Launcher, MultiMC, the official l
     horizon-launcher instance others
 
 - `--folder`: Look in this folder instead: a launcher's folder, a folder of instances (its instances/, the CurseForge app's Instances) or one instance
-
-MCP: `instance_others`.
 
 ## `horizon-launcher instance copy-from`
 
@@ -595,8 +419,6 @@ Copy another launcher's instance into a new Java instance: its Minecraft version
 - `--as`: The new instance's name (default: the same)
 - `--minecraft`: The Minecraft version it plays, when its launcher doesn't say (the CurseForge app, the Modrinth App)
 
-MCP: `instance_copy_from`.
-
 ## `horizon-launcher worlds list`
 
 The worlds: name, mode, version, last played and size (the default).
@@ -604,8 +426,6 @@ The worlds: name, mode, version, last played and size (the default).
     horizon-launcher worlds list
 
 - `--instance`: The instance (default: the selected one)
-
-MCP: `worlds_list`.
 
 ## `horizon-launcher worlds backup`
 
@@ -616,8 +436,6 @@ Zip a world into the instance's backups/ folder, as the game's Make Backup does.
 - `WORLD`: Its folder or name
 - `--instance`
 
-MCP: `worlds_backup`.
-
 ## `horizon-launcher worlds copy`
 
 Copy a world beside it, as "<name> (1)".
@@ -626,8 +444,6 @@ Copy a world beside it, as "<name> (1)".
 
 - `WORLD`
 - `--instance`
-
-MCP: `worlds_copy`.
 
 ## `horizon-launcher worlds delete`
 
@@ -638,8 +454,6 @@ Move a world to the system's trash.
 - `WORLD`
 - `--instance`
 
-MCP: `worlds_delete`, needs `confirm: true`.
-
 ## `horizon-launcher worlds datapack-list`
 
 A world's data packs, and which are on.
@@ -648,8 +462,6 @@ A world's data packs, and which are on.
 
 - `WORLD`
 - `--instance`
-
-MCP: `worlds_datapack_list`.
 
 ## `horizon-launcher worlds datapack-add`
 
@@ -661,8 +473,6 @@ Copy a data pack zip into a world (the game turns it on when the world opens).
 - `FILE`
 - `--instance`
 
-MCP: `worlds_datapack_add`.
-
 ## `horizon-launcher worlds datapack-remove`
 
 Move a world's data pack to the system's trash.
@@ -673,8 +483,6 @@ Move a world's data pack to the system's trash.
 - `PACK`: Its file name, with or without .zip
 - `--instance`
 
-MCP: `worlds_datapack_remove`, needs `confirm: true`.
-
 ## `horizon-launcher packs list`
 
 The resource and shader packs, and which are on (the default).
@@ -684,8 +492,6 @@ The resource and shader packs, and which are on (the default).
 - `--kind` (resource, shader): Only this kind
 - `--instance`: The instance (default: the selected one)
 
-MCP: `packs_list`.
-
 ## `horizon-launcher packs add`
 
 Copy a pack file in: a resource pack .zip, a shader pack .zip or a .hshader.
@@ -694,8 +500,6 @@ Copy a pack file in: a resource pack .zip, a shader pack .zip or a .hshader.
 
 - `FILE`
 - `--instance`
-
-MCP: `packs_add`.
 
 ## `horizon-launcher packs on`
 
@@ -707,8 +511,6 @@ Turn a pack on (a resource pack goes on top; a shader pack replaces the one that
 - `--kind` (resource, shader)
 - `--instance`
 
-MCP: `packs_on`.
-
 ## `horizon-launcher packs off`
 
 Turn a pack off.
@@ -718,8 +520,6 @@ Turn a pack off.
 - `PACK`
 - `--kind` (resource, shader)
 - `--instance`
-
-MCP: `packs_off`.
 
 ## `horizon-launcher packs remove`
 
@@ -731,15 +531,11 @@ Turn a pack off and move it to the system's trash.
 - `--kind` (resource, shader)
 - `--instance`
 
-MCP: `packs_remove`, needs `confirm: true`.
-
 ## `horizon-launcher java list`
 
 The Java runtimes Horizon downloaded from Mojang and the ones installed on this computer.
 
     horizon-launcher java list
-
-MCP: `java_list`.
 
 ## `horizon-launcher java install`
 
@@ -749,8 +545,6 @@ Download Mojang's Java runtime: a major (8, 16, 17, 21, 25) or a component name 
 
 - `JAVA`
 
-MCP: `java_install`.
-
 ## `horizon-launcher screenshots list`
 
 The screenshots, the newest first, with their files (the default).
@@ -758,8 +552,6 @@ The screenshots, the newest first, with their files (the default).
     horizon-launcher screenshots list
 
 - `--instance`: The instance (default: the selected one)
-
-MCP: `screenshots_list`.
 
 ## `horizon-launcher screenshots delete`
 
@@ -770,8 +562,6 @@ Move a screenshot to the system's trash.
 - `SCREENSHOT`: Its file name, with or without .png
 - `--instance`
 
-MCP: `screenshots_delete`, needs `confirm: true`.
-
 ## `horizon-launcher multiplayer list`
 
 The servers of the game's Multiplayer screen (the default).
@@ -779,8 +569,6 @@ The servers of the game's Multiplayer screen (the default).
     horizon-launcher multiplayer list
 
 - `--instance`: The instance (default: the selected one)
-
-MCP: `multiplayer_list`.
 
 ## `horizon-launcher multiplayer add`
 
@@ -792,8 +580,6 @@ Add a server to the list.
 - `--name`: Its name in the list (default: Minecraft Server)
 - `--instance`
 
-MCP: `multiplayer_add`.
-
 ## `horizon-launcher multiplayer remove`
 
 Remove a server from the list: its position from 1, name or address.
@@ -803,15 +589,11 @@ Remove a server from the list: its position from 1, name or address.
 - `SERVER`
 - `--instance`
 
-MCP: `multiplayer_remove`, needs `confirm: true`.
-
 ## `horizon-launcher modpack list`
 
 The imported packs and their coverage (the default).
 
     horizon-launcher modpack list
-
-MCP: `modpack_list`.
 
 ## `horizon-launcher modpack import`
 
@@ -820,8 +602,6 @@ Import a .mrpack, a CurseForge zip or an instance folder, and write its coverage
     horizon-launcher modpack import <PATH>
 
 - `PATH`
-
-MCP: `modpack_import`.
 
 ## `horizon-launcher modpack port`
 
@@ -833,8 +613,6 @@ Get the jars of what this computer can port and carry them over.
 - `--from`: A folder with your own jars (an installed instance, a downloads folder)
 - `--version`: The installed version the ports are for (default: the selected one)
 
-MCP: `modpack_port`.
-
 ## `horizon-launcher modpack play`
 
 Play a ported pack as its own profile.
@@ -845,8 +623,6 @@ Play a ported pack as its own profile.
 - `--allow-jar-downloads`: Allow missing original Java asset/data jars to be downloaded from Modrinth
 - `--version`
 
-MCP: `modpack_play`.
-
 ## `horizon-launcher modpack remove`
 
 Remove an imported pack: its jars, ports and the profile's saves.
@@ -855,8 +631,6 @@ Remove an imported pack: its jars, ports and the profile's saves.
 
 - `PACK`
 
-MCP: `modpack_remove`, needs `confirm: true`.
-
 ## `horizon-launcher mods list`
 
 What the browser installed in an instance (the default).
@@ -864,8 +638,6 @@ What the browser installed in an instance (the default).
     horizon-launcher mods list
 
 - `--instance`: The instance (default: the selected one)
-
-MCP: `mods_list`.
 
 ## `horizon-launcher mods search`
 
@@ -879,8 +651,6 @@ Search for packs Horizon loads, or for what a Java instance runs (made for its M
 - `--source` (modrinth, curseforge, horizon)
 - `--instance`: The instance (default: the selected one)
 
-MCP: `mods_search`.
-
 ## `horizon-launcher mods check`
 
 Say how well a Java mod runs in Horizon: its jar is downloaded (checksum checked), carried over and read; the answer is kept.
@@ -890,8 +660,6 @@ Say how well a Java mod runs in Horizon: its jar is downloaded (checksum checked
 - `PROJECT`
 - `--everything`: Allow a version made for another Minecraft version (1.21 and later)
 - `--source` (modrinth, curseforge, horizon)
-
-MCP: `mods_check`.
 
 ## `horizon-launcher mods install`
 
@@ -905,8 +673,6 @@ Install a pack and what it needs into an instance, by its id or slug (checksums 
 - `--everything`: Allow a version made for another Minecraft version
 - `--source` (modrinth, curseforge, horizon)
 
-MCP: `mods_install`.
-
 ## `horizon-launcher mods update`
 
 Update what the browser installed (or one pack).
@@ -916,8 +682,6 @@ Update what the browser installed (or one pack).
 - `PROJECT`
 - `--check`: Only say what is newer
 - `--instance`: The instance (default: the selected one)
-
-MCP: `mods_update`.
 
 ## `horizon-launcher mods add-github`
 
@@ -931,8 +695,6 @@ Install a native mod from a GitHub link (docs/modding/src/how-to/native-mods.md,
 - `--instance`: The instance (default: the selected one)
 - `--trust-native-code`: Allow native code for this install (remembered; revoke in Settings, Storage)
 
-MCP: none: the player's switch.
-
 ## `horizon-launcher mods update-github`
 
 Look for newer versions of the native mods installed from GitHub (the latest release, or the default branch's head for a mod installed from a commit), and install them.
@@ -944,8 +706,6 @@ Look for newer versions of the native mods installed from GitHub (the latest rel
 - `--instance`: The instance (default: the selected one)
 - `--trust-native-code`: Allow native code for this install (remembered; revoke in Settings, Storage)
 
-MCP: none: the player's switch.
-
 ## `horizon-launcher mods remove`
 
 Remove a pack the browser installed.
@@ -954,8 +714,6 @@ Remove a pack the browser installed.
 
 - `PROJECT`
 - `--instance`: The instance (default: the selected one)
-
-MCP: `mods_remove`, needs `confirm: true`.
 
 ## `horizon-launcher mods enable`
 
@@ -966,8 +724,6 @@ Turn on a mod the browser installed (horizon-mods.txt; the game's Mods screen ha
 - `PROJECT`
 - `--instance`: The instance (default: the selected one)
 
-MCP: `mods_enable`.
-
 ## `horizon-launcher mods disable`
 
 Turn off a mod the browser installed; it stays installed (in a Java instance, as `<file>.disabled`).
@@ -977,15 +733,11 @@ Turn off a mod the browser installed; it stays installed (in a Java instance, as
 - `PROJECT`
 - `--instance`: The instance (default: the selected one)
 
-MCP: `mods_disable`.
-
 ## `horizon-launcher rust status`
 
 Whether it is installed, its version and whether this computer can link with it.
 
     horizon-launcher rust status
-
-MCP: `rust_status`.
 
 ## `horizon-launcher rust install`
 
@@ -993,103 +745,19 @@ Download the pinned toolchain from static.rust-lang.org (once), checked by SHA-2
 
     horizon-launcher rust install
 
-MCP: `rust_install`.
-
 ## `horizon-launcher rust remove`
 
 Delete the toolchain and the native builds' Cargo home.
 
     horizon-launcher rust remove
 
-MCP: `rust_remove`.
-
-## `horizon-launcher servers list`
-
-The servers, their folder and whether they run.
-
-    horizon-launcher servers list
-
-MCP: `servers_list`.
-
-## `horizon-launcher servers create`
-
-Create a server; with no options it is a new world, survival, normal, 10 players, friends only.
-
-    horizon-launcher servers create
-
-- `--name`
-- `--seed`: The new world's seed (default: random)
-- `--copy-world`: Start from a copy of this world folder (one of your saves)
-- `--mode` (survival, creative, adventure, spectator)
-- `--difficulty` (peaceful, easy, normal, hard)
-- `--max-players`
-- `--open`: Let anyone in (no whitelist)
-- `--offline`: Do not check players' Minecraft accounts (offline mode: anyone can use any name)
-- `--player`: Who may join (repeatable); the first becomes an operator
-- `--version`: The installed version whose programs and game files servers use, if none are set up yet
-- `--accept-eula`: Agree to the Minecraft EULA (https://aka.ms/MinecraftEULA)
-
-MCP: `servers_create`, only when the player asks.
-
-## `horizon-launcher servers set-up`
-
-Copy an installed, prepared version's programs and game files for the servers (again).
-
-    horizon-launcher servers set-up
-
-- `--version`
-
-MCP: `servers_set_up`.
-
-## `horizon-launcher servers run`
-
-Run a horizon-server command on a server, for example: servers run "My server" -- status.
-
-    horizon-launcher servers run <SERVER> -- <ARGS>...
-
-- `SERVER`: The server's name or folder
-- `ARGS`
-
-MCP: `servers_run`.
-
-## `horizon-launcher servers forget`
-
-Take a server off the list (its folder stays).
-
-    horizon-launcher servers forget <SERVER>
-
-- `SERVER`
-
-MCP: `servers_forget`, needs `confirm: true`.
-
-## `horizon-launcher mcp`
-
-Serve the Model Context Protocol on stdin and stdout, for AI agents (refused while No AI is on).
-
-    horizon-launcher mcp
-
-MCP: none: this command is the MCP server.
-
-## `horizon-launcher agent-config`
-
-How to connect an AI agent (Claude Code, Codex, Cursor, any MCP client) to `mcp`: the config to paste and the command that adds it (refused while No AI is on).
-
-    horizon-launcher agent-config
-
-- `--client` (claude-code, codex, cursor, generic): Only this client
-- `--test`: Start the MCP server as a client would and say whether it answered
-
-MCP: none: it prints how to connect a client to `mcp`.
-
 ## `horizon-launcher no-ai`
 
-Show or set No AI: on hides and turns off every AI feature (the companion, agent control, horizon-ctl and both MCP servers); off, the default, makes them available.
+Show or set No AI: on hides and turns off every AI feature (the companion, agent control, horizon-ctl and the game’s MCP server); off, the default, makes them available.
 
     horizon-launcher no-ai [STATE]
 
 - `STATE` (on, off): Omit to show the current state
-
-MCP: none: the player's switch.
 
 ## `horizon-launcher benchmark`
 
@@ -1098,5 +766,3 @@ Measure the launcher: starts (the first is the cold one), page switching, idle C
     horizon-launcher benchmark
 
 - `--repeats`: How many times to start it
-
-MCP: `benchmark`.

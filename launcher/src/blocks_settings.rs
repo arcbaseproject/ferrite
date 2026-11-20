@@ -214,7 +214,7 @@ impl Launcher {
                     .child(group("Account", "user").mt_0())
                     .child(accounts)
                     .child(group("Updates", "reload"))
-                    .child(index_row(n + 1, "Horizon", Some(plain(&horizon)), horizon_action, &t))
+                    .child(index_row(n + 1, "Ferrite", Some(plain(&horizon)), horizon_action, &t))
                     .child(index_row(
                         n + 1,
                         tr("Launcher"),
@@ -263,8 +263,6 @@ impl Launcher {
                     .child(group("Game", "gamepad"))
                     .child(self.game_architecture_row(n + 5, cx))
                     .child(self.game_args_row(n + 6, cx))
-                    .child(group("AI", "terminal"))
-                    .child(self.no_ai_row(n + 6, cx))
                     .child(group("About", "info-box"))
                     .child(self.location_row(n + 9, cx))
                     .child(index_row(
@@ -300,8 +298,6 @@ impl Launcher {
                         ))
                     }),
             )
-            .child(self.collection_section(cx))
-            .children(self.agents_section(cx))
     }
 
     pub(crate) fn request_native_build_consent(&mut self) {

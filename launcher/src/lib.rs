@@ -1,6 +1,5 @@
 //! The launcher's core, shared by the GUI, the CLI and the MCP server.
 pub mod account;
-pub mod agents;
 pub mod backend;
 pub mod browser;
 pub mod build_import;
@@ -53,19 +52,14 @@ mod run_leases;
 pub mod rust_toolchain;
 pub mod screenshots;
 pub mod server_list;
-pub mod servers;
 pub mod setup_args;
-pub mod shop;
 pub mod shortcut;
 pub mod signed;
 pub mod sources;
-pub mod tailscale;
-pub mod telemetry;
 pub mod themes;
 pub mod uninstall_aside;
 pub mod update_handoff;
 pub mod update_recovery;
-pub mod wardrobe;
 #[cfg(windows)]
 mod windows_runtime;
 pub mod worlds;
@@ -75,8 +69,6 @@ pub mod jars;
 pub mod storage;
 
 pub mod cache_cleanup;
-
-pub mod bug_report;
 
 #[cfg(test)]
 mod test_support;

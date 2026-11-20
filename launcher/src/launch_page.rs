@@ -1,6 +1,6 @@
 //! Launch… on Home's Instance row: what runs around the selected instance's game
 //! (`horizon_launcher::launch`): a command before it, a wrapper, and environment variables.
-use super::servers_page::Field;
+use super::fields::Field;
 use super::*;
 use gpui::{
     canvas, relative, Bounds, FontWeight, MouseButton, MouseDownEvent, MouseMoveEvent,
@@ -74,16 +74,16 @@ impl Launcher {
         let Some(i) = self.selected_instance().cloned() else {
             return;
         };
-        self.servers
+        self.fields
             .text(Field::PreLaunch)
             .set(i.launch.pre_launch.clone());
-        self.servers
+        self.fields
             .text(Field::Wrapper)
             .set(i.launch.wrapper.clone());
-        self.servers
+        self.fields
             .text(Field::LaunchEnv)
             .set(launch::env_line(&i.launch.env));
-        self.servers
+        self.fields
             .text(Field::PostExit)
             .set(i.launch.post_exit.clone());
         self.launch = Some(LaunchPanel {
@@ -98,7 +98,7 @@ impl Launcher {
     /// after the game, the wrapper and the variables, as typed.
     pub(super) fn hooks_typed(&self, id: &str) -> Option<[String; 4]> {
         self.launch.as_ref().filter(|p| p.instance == id)?;
-        let typed = |f: Field| self.servers.value(f).trim().to_string();
+        let typed = |f: Field| self.fields.value(f).trim().to_string();
         Some([
             typed(Field::PreLaunch),
             typed(Field::Wrapper),
@@ -257,7 +257,7 @@ impl Launcher {
         if self.memory_slider.shown.as_deref() != Some(id) {
             return Ok(d.memory);
         }
-        launch::parse_memory(self.servers.value(Field::MemoryLimit))
+        launch::parse_memory(self.fields.value(Field::MemoryLimit))
             .map(|typed| Some(typed.unwrap_or(instances::DEFAULT_MEMORY_MB)))
             .map_err(|_| ())
     }
@@ -280,14 +280,14 @@ impl Launcher {
 
     /// Saves what's in the box to `id`, if it's a value and a new one.
     fn save_typed_memory(&mut self, id: &str) {
-        let typed = self.servers.value(Field::MemoryLimit).to_owned();
+        let typed = self.fields.value(Field::MemoryLimit).to_owned();
         let Ok(memory) = launch::parse_memory(&typed) else {
             self.memory_slider.saved = None;
-            self.servers.set_field_invalid(Field::MemoryLimit, true);
+            self.fields.set_field_invalid(Field::MemoryLimit, true);
             return;
         };
         let memory = memory.unwrap_or(instances::DEFAULT_MEMORY_MB);
-        self.servers.set_field_invalid(Field::MemoryLimit, false);
+        self.fields.set_field_invalid(Field::MemoryLimit, false);
         let same = instances::list()
             .iter()
             .find(|i| i.id == id)
@@ -311,7 +311,7 @@ impl Launcher {
             self.memory_slider.saved = None;
             self.memory_slider.shown = Some(instance.to_owned());
         }
-        if self.servers.has_focus(Field::MemoryLimit) {
+        if self.fields.has_focus(Field::MemoryLimit) {
             self.memory_slider.typing = Some(instance.to_owned());
             return;
         }
@@ -320,8 +320,8 @@ impl Launcher {
             return;
         }
         let shown = memory.to_string();
-        if self.servers.value(Field::MemoryLimit) != shown {
-            self.servers.text(Field::MemoryLimit).set(shown);
+        if self.fields.value(Field::MemoryLimit) != shown {
+            self.fields.text(Field::MemoryLimit).set(shown);
         }
     }
 
@@ -335,9 +335,9 @@ impl Launcher {
         let saved = Self::saved_memory(&instance)?;
         let memory = self.memory_slider.dragging.unwrap_or(saved);
         self.sync_memory_box(&instance.id, memory);
-        let typed = launch::parse_memory(self.servers.value(Field::MemoryLimit));
+        let typed = launch::parse_memory(self.fields.value(Field::MemoryLimit));
         // While typing, the slider follows a value it can read.
-        let memory = match (self.servers.has_focus(Field::MemoryLimit), typed) {
+        let memory = match (self.fields.has_focus(Field::MemoryLimit), typed) {
             (true, Ok(typed)) => typed.unwrap_or(instances::DEFAULT_MEMORY_MB),
             _ => memory,
         };
@@ -449,8 +449,8 @@ impl Launcher {
         let saved = self.shown_memory(&instance)?;
         let memory = self.memory_slider.dragging.unwrap_or(saved);
         self.sync_memory_box(&instance.id, memory);
-        let typed = launch::parse_memory(self.servers.value(Field::MemoryLimit));
-        let memory = match (self.servers.has_focus(Field::MemoryLimit), typed) {
+        let typed = launch::parse_memory(self.fields.value(Field::MemoryLimit));
+        let memory = match (self.fields.has_focus(Field::MemoryLimit), typed) {
             (true, Ok(typed)) => typed.unwrap_or(instances::DEFAULT_MEMORY_MB),
             _ => memory,
         };

@@ -71,9 +71,6 @@ const RAIL_MOTION: horizon_theme::Motion = horizon_theme::Motion {
     ms: 320,
     curve: [0.22, 0.9, 0.3, 1.08],
 };
-/// Discord's own blurple, in every theme, and under the pointer.
-const DISCORD: u32 = 0x5865F2;
-const DISCORD_HOVER: u32 = 0x4752C4;
 
 /// The rail's state: whether the pointer is on it, and where its last opening or shutting began.
 #[derive(Default)]
@@ -85,8 +82,6 @@ pub struct Rail {
     at: f32,
     /// The instance list's scroll, for the cue that more rows sit below.
     list: gpui::ScrollHandle,
-    /// The web links shown in full while the instance list overflows (they fold into one row).
-    links_open: bool,
 }
 
 impl Rail {
@@ -517,7 +512,7 @@ impl Launcher {
             &t,
         );
 
-        let mut list = div()
+        let list = div()
             .id("side-list")
             .flex()
             .flex_col()
@@ -527,66 +522,9 @@ impl Launcher {
             .track_scroll(&self.rail.list)
             .children(self.glass_instances(open, label, cx));
 
-        // The player's hosted servers, one more section under the instances.
-        let servers: Vec<_> = self
-            .servers
-            .sidebar_list()
-            .map(<[_]>::to_vec)
-            .unwrap_or_else(|| self.side_servers.clone());
-        if !servers.is_empty() {
-            list = list.child(
-                div()
-                    .h(px(22.))
-                    .flex()
-                    .items_end()
-                    .px(px(8.))
-                    .pb(px(4.))
-                    .child(
-                        fade(ui::text(12., FontWeight::MEDIUM, ink::DIM))
-                            .whitespace_nowrap()
-                            .child(tr("Servers")),
-                    ),
-            );
-        }
-        let mut server_rows = div().flex().flex_col().gap(px(2.));
-        for e in &servers {
-            let up = self.servers.is_up(&e.dir);
-            let shown = self.page == Page::Servers && self.servers.open.as_ref() == Some(&e.dir);
-            let dir = e.dir.clone();
-            server_rows = server_rows.child(
-                ui::row(format!("side-server-{}", e.dir.display()), shown, 8., &t)
-                    .child(
-                        div()
-                            .relative()
-                            .flex()
-                            .flex_none()
-                            .items_center()
-                            .justify_center()
-                            .size(px(38.))
-                            .rounded(px(radius::CONTROL))
-                            .bg(white(fill::BUTTON))
-                            .child(ui::icon("computer-terminal-01", 18., white(ink::STRONG))),
-                    )
-                    .child(fade(ui::row_text(
-                        e.name.clone(),
-                        if up {
-                            (Tone::Live, tr("Running").into())
-                        } else {
-                            (Tone::Off, tr("Stopped").into())
-                        },
-                    )))
-                    .when(!open, |d| d.tooltip(ui::tip(e.name.clone())))
-                    .on_click(cx.listener(move |this, _: &ClickEvent, _, cx| {
-                        this.open_server(dir.clone());
-                        this.go(Page::Servers);
-                        cx.notify();
-                    })),
-            );
-        }
-        let list = list.child(server_rows);
         // More rows than the rail shows: the web links fold into one row, and while rows sit
         // below the list's foot a fade and a "More" pill say so; the pill scrolls to them.
-        let rows = self.instances.list.len() + servers.len();
+        let rows = self.instances.list.len();
         let overflows = 52. * rows as f32 > f32::from(window.viewport_size().height) - 420.;
         let scroll = self.rail.list.clone();
         // Before the list's first layout the handle knows no height: the estimate stands in.
@@ -679,119 +617,8 @@ impl Launcher {
         };
         if open {
             foot = foot.children(self.rail_update_card(soft, cx));
-            // Sculk's card (a sponsor), only where the rail is wide enough to show it.
-            // When the instances already overflow the rail, the list keeps the room.
-            if !self.settings.partner_hidden && p > 0.98 && !overflows {
-                let free = f32::from(window.viewport_size().height) - 420. - 52. * rows as f32;
-                let mut side = div().relative().mb(px(6.)).child(partner::card(
-                    "partner-side",
-                    RAIL_OPEN - 24.,
-                    free < partner::TALL_HEIGHT,
-                    &t,
-                ));
-                if self.settings.partner_seen_secs >= partner::SEEN_BEFORE_HIDE {
-                    side = side.child(partner::hide_button("partner-hide", &t).on_click(
-                        cx.listener(|this, _: &ClickEvent, _, cx| {
-                            this.settings.partner_hidden = true;
-                            this.save_settings();
-                            cx.notify();
-                        }),
-                    ));
-                }
-                foot = foot.child(side);
-            }
         }
 
-        // Discord keeps its own blurple in every theme, as the icon at rest and the fill under the
-        // pointer, so it never reads as the selected page. No pulse.
-        if !self.links.discord.is_empty() {
-            let url = self.links.discord.clone();
-            let did = SharedString::from("discord");
-            let hovered = crate::hover_is(&did);
-            foot = foot.child(keyboard(
-                track_hover(
-                    div()
-                        .id(did.clone())
-                        .relative()
-                        .flex()
-                        .flex_none()
-                        .items_center()
-                        .gap(px(12.))
-                        .w_full()
-                        .h(px(42.))
-                        .mb(px(4.))
-                        .px(px(17.5))
-                        .rounded(px(radius::ROW))
-                        .when(hovered, |d| d.bg(ui::color(DISCORD_HOVER)))
-                        .cursor_pointer()
-                        .child(ui::icon(
-                            "discord",
-                            19.,
-                            if hovered {
-                                gpui::white()
-                            } else {
-                                ui::color(DISCORD)
-                            },
-                        ))
-                        .child(
-                            fade(ui::text(14., FontWeight::SEMIBOLD, 1.))
-                                .text_color(if hovered {
-                                    gpui::white()
-                                } else {
-                                    white(ink::STRONG)
-                                })
-                                .whitespace_nowrap()
-                                .child(tr("Join the Discord")),
-                        )
-                        .when(!open, |d| d.tooltip(ui::tip(tr("Join the Discord"))))
-                        .on_click(move |_, _, cx| cx.open_url(&url)),
-                    did,
-                ),
-                &t,
-            ));
-        }
-        let links = [
-            (
-                "sponsor",
-                tr("Sponsor"),
-                "favourite",
-                self.links.sponsor.clone(),
-            ),
-            ("roadmap", tr("Roadmap"), "map", self.links.roadmap.clone()),
-            ("docs", tr("Documentation"), "book", self.links.docs.clone()),
-            (
-                "website",
-                tr("Website"),
-                "globe-02",
-                self.links.website.clone(),
-            ),
-        ];
-        // While the instances overflow, the links fold into one row the player can open.
-        let folded = overflows && !self.rail.links_open;
-        if overflows && links.iter().any(|(.., url)| !url.is_empty()) {
-            let (name, icon) = if folded {
-                (tr("More links"), "more-horizontal")
-            } else {
-                (tr("Fewer links"), "chevron-down")
-            };
-            foot = foot.child(
-                button("rail-links".into(), icon, name.into(), false).on_click(cx.listener(
-                    |this, _: &ClickEvent, _, cx| {
-                        this.rail.links_open = !this.rail.links_open;
-                        cx.notify();
-                    },
-                )),
-            );
-        }
-        for (id, name, icon, url) in links {
-            if url.is_empty() || folded {
-                continue;
-            }
-            foot = foot.child(
-                button(SharedString::from(id), icon, name.into(), false)
-                    .on_click(move |_, _, cx| cx.open_url(&url)),
-            );
-        }
         let settings_open = self.page == Page::Settings;
         foot = foot.child(
             button(
@@ -993,7 +820,7 @@ impl Launcher {
             .items_center()
             .gap(px(if compact { 2. } else { 4. }))
             .min_w_0();
-        for (page, label, _) in Page::in_top_bar(self.wardrobe_shown()) {
+        for (page, label, _) in Page::in_top_bar() {
             let mut item = ui::nav_tab(format!("nav-{label}"), tr(label), self.page == page, &t);
             if compact {
                 item = item.px(px(8.));

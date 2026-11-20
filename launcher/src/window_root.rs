@@ -3,7 +3,7 @@
 //! A view's frame dirties the views it sits in, so a drifting sky inside the launcher drew the
 //! whole launcher again on every sky frame. As siblings, a sky frame draws the sky and this thin
 //! root; the launcher is drawn from its last frame (GPUI Fast retains views).
-use crate::{rain, scene, sky, Launcher};
+use crate::{rain, sky, Launcher};
 use gpui::{div, prelude::*, Context, Entity, Hsla, IntoElement, Render, Window};
 
 /// What is behind the launcher, as its last frame asked for.
@@ -20,20 +20,14 @@ pub struct Back {
 
 pub struct Backdrop {
     back: Option<Back>,
-    scene: Entity<scene::Scene>,
     sky: Entity<sky::SkyView>,
     rain: Entity<rain::Rain>,
 }
 
 impl Backdrop {
-    pub fn new(
-        scene: Entity<scene::Scene>,
-        sky: Entity<sky::SkyView>,
-        rain: Entity<rain::Rain>,
-    ) -> Self {
+    pub fn new(sky: Entity<sky::SkyView>, rain: Entity<rain::Rain>) -> Self {
         Self {
             back: None,
-            scene,
             sky,
             rain,
         }
@@ -55,8 +49,13 @@ impl Render for Backdrop {
             return back;
         };
         back = back.bg(b.side);
+        // Ferrite: graphite with a faint ember glow at the foot, instead of Horizon's sunset.
         back = if b.sunset {
-            back.child(self.scene.clone())
+            back.bg(gpui::linear_gradient(
+                180.,
+                gpui::linear_color_stop(gpui::rgb(0x111113), 0.),
+                gpui::linear_color_stop(gpui::rgb(0x1c1410), 1.),
+            ))
         } else {
             back.child(self.sky.clone())
         };

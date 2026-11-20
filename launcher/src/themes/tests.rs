@@ -181,7 +181,7 @@ fn a_typed_colour_is_worn_as_is_and_survives_settings_json() {
     // The mockup's swatches are the named accents.
     assert_eq!(Accent::parse("#2563EB"), Some(Accent::BLUE));
     assert_eq!(Accent::BLUE.hex(), "#2563eb");
-    assert_eq!(Accent::VIOLET.hex(), "#6b4bff");
+    assert_eq!(Accent::VIOLET.hex(), "#ff6a1f");
     // Any other colour keeps its exact value for the glass look, and its hue for the light one.
     let typed = Accent::parse("#ff8800").unwrap();
     assert_eq!(typed.rgb(), 0xff8800);
@@ -193,9 +193,9 @@ fn a_typed_colour_is_worn_as_is_and_survives_settings_json() {
     for wrong in ["#ff88", "#ff88001", "#gg8800", "#"] {
         assert_eq!(Accent::parse(wrong), None, "{wrong}");
     }
-    // A picked hue wears the violet's saturation and lightness.
+    // A picked hue wears the default accent's saturation and lightness.
     let (h, s, l) = hsl(Accent::custom(120.).rgb());
-    let (_, vs, vl) = hsl(0x6b4bff);
+    let (_, vs, vl) = hsl(0xff6a1f);
     assert!((h - 120.).abs() < 1. && (s - vs).abs() < 0.02 && (l - vl).abs() < 0.02);
 }
 

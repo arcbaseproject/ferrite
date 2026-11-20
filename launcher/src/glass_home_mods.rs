@@ -5,11 +5,11 @@
 use super::*;
 use crate::glass_ui::{self as ui, white};
 use build_mode::ModKind;
+use fields::Field;
 use glass_home_lists::Listener;
 use horizon_launcher::github_mods;
 use horizon_theme::glass::{ink, radius};
 use instance_mods::ModRow;
-use servers_page::Field;
 
 impl Launcher {
     /// Home's Mods tab, for the selected instance.
@@ -45,7 +45,7 @@ impl Launcher {
             ),
         };
         let filter = self
-            .servers
+            .fields
             .value(Field::InstanceModsFilter)
             .trim()
             .to_lowercase();

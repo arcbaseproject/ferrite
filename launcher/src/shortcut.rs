@@ -94,7 +94,7 @@ pub fn desktop_entry(exe: &Path, id: &str, name: &str) -> String {
          Comment=Play {name} in Horizon\n\
          Exec={} play --instance {}\n\
          TryExec={}\n\
-         Icon=horizon\n\
+         Icon=ferrite\n\
          Terminal=false\n\
          Categories=Game;\n\
          StartupWMClass=horizon\n\

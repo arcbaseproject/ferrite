@@ -73,7 +73,7 @@ impl Launcher {
     fn palette_commands(&self, q: &str) -> Vec<Command> {
         let instance = self
             .selected_instance()
-            .map_or_else(|| "Horizon".to_owned(), |i| i.name.clone());
+            .map_or_else(|| "Ferrite".to_owned(), |i| i.name.clone());
         let mut all = Vec::new();
         for i in &self.instances.list {
             if matches!(i.kind, InstanceKind::Default | InstanceKind::Own) {
@@ -85,9 +85,7 @@ impl Launcher {
             }
         }
         // `in_top_bar`: a page the top bar hides stays out of the palette too.
-        for (page, label, _) in
-            Page::in_top_bar(self.wardrobe_shown()).chain([(Page::Settings, "Settings", "")])
-        {
+        for (page, label, _) in Page::in_top_bar().chain([(Page::Settings, "Settings", "")]) {
             all.push(Command {
                 label: trf("Open {page}", &[("page", tr(label))]),
                 hint: tr("Page").to_string(),

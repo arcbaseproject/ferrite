@@ -252,3 +252,17 @@ fn polish_entries_are_valid_and_keep_placeholders() {
         assert_eq!(holes(en), holes(said), "Polish: {en:?}");
     }
 }
+
+#[test]
+fn ui_text_names_the_fork_ferrite() {
+    assert_eq!(
+        super::rebrand("Quit Horizon Launcher"),
+        "Quit Ferrite Launcher"
+    );
+    assert_eq!(super::rebrand("Play"), "Play");
+    // Same string twice returns the cached copy.
+    assert!(std::ptr::eq(
+        super::rebrand("My Horizon"),
+        super::rebrand("My Horizon")
+    ));
+}

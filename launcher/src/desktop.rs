@@ -1,7 +1,7 @@
 //! Linux: the launcher puts itself in the applications menu. It writes
-//! `applications/horizon-launcher.desktop` (pointing at wherever the binary is now) and Horizon's
+//! `applications/ferrite-launcher.desktop` (pointing at wherever the binary is now) and Ferrite's
 //! icon into the `hicolor` theme, under `$XDG_DATA_HOME` (`~/.local/share` by default), so no root
-//! is needed; `horizon.desktop` (hidden from menus) gives the game's window its icon on Wayland.
+//! is needed; `ferrite.desktop` (hidden from menus) gives the game's window its icon on Wayland.
 //! A release build writes it when it starts only if there is no entry yet or the one there starts
 //! a program that is gone ([`repair`]), so a development or test build never takes over a working
 //! entry. Turning the Settings switch on (or `horizon-launcher desktop-entry`) points it at this
@@ -52,8 +52,8 @@ const ICONS: [(&str, &[u8]); 9] = [
     ),
 ];
 
-const LAUNCHER_ENTRY: &str = "horizon-launcher.desktop";
-const GAME_ENTRY: &str = "horizon.desktop";
+const LAUNCHER_ENTRY: &str = "ferrite-launcher.desktop";
+const GAME_ENTRY: &str = "ferrite.desktop";
 const GAME_ENTRY_TEXT: &str = include_str!("../../packaging/linux/horizon.desktop");
 
 /// `$XDG_DATA_HOME`, or `~/.local/share` when it is unset or not absolute (as the spec says).
@@ -82,15 +82,15 @@ pub fn launcher_entry(exe: &Path) -> String {
     format!(
         "[Desktop Entry]\n\
          Type=Application\n\
-         Name=Horizon\n\
+         Name=Ferrite\n\
          GenericName=Game launcher\n\
-         Comment=Install, prepare and play Horizon, Minecraft: Java Edition {minecraft} rewritten in Rust\n\
+         Comment=Install, prepare and play Ferrite, Minecraft: Java Edition {minecraft} rewritten in Rust\n\
          Exec={}\n\
          TryExec={}\n\
-         Icon=horizon\n\
+         Icon=ferrite\n\
          Terminal=false\n\
          Categories=Game;\n\
-         StartupWMClass=horizon-launcher\n",
+         StartupWMClass=ferrite-launcher\n",
         quote(exe),
         exe.display(),
         minecraft = horizon_platform::version::VANILLA_VERSION,
@@ -106,14 +106,18 @@ fn files(data: &Path, exe: &Path) -> Vec<(PathBuf, Vec<u8>)> {
         ),
         (
             data.join("applications").join(GAME_ENTRY),
-            GAME_ENTRY_TEXT.as_bytes().to_vec(),
+            GAME_ENTRY_TEXT
+                .replace("Name=Horizon", "Name=Ferrite")
+                .replace("Icon=horizon", "Icon=ferrite")
+                .replace("StartupWMClass=horizon", "StartupWMClass=ferrite")
+                .into_bytes(),
         ),
     ];
     for (size, bytes) in ICONS {
         let name = if size == "scalable" {
-            "horizon.svg"
+            "ferrite.svg"
         } else {
-            "horizon.png"
+            "ferrite.png"
         };
         out.push((
             data.join("icons/hicolor")
@@ -262,7 +266,7 @@ mod tests {
         let entry = launcher_entry(Path::new("/home/a b/Horizon \"x\"/horizon-launcher"));
         assert!(entry.contains("Exec=\"/home/a b/Horizon \\\"x\\\"/horizon-launcher\"\n"));
         assert!(entry.contains("TryExec=/home/a b/Horizon \"x\"/horizon-launcher\n"));
-        assert!(entry.contains("Icon=horizon\n"));
+        assert!(entry.contains("Icon=ferrite\n"));
     }
 
     #[test]
@@ -271,10 +275,10 @@ mod tests {
         let _ = fs::remove_dir_all(&data);
         assert!(install_in(&data, Path::new("/opt/a/horizon-launcher")).unwrap());
         assert!(!install_in(&data, Path::new("/opt/a/horizon-launcher")).unwrap());
-        let png = data.join("icons/hicolor/48x48/apps/horizon.png");
+        let png = data.join("icons/hicolor/48x48/apps/ferrite.png");
         assert!(fs::read(&png).unwrap().starts_with(b"\x89PNG"));
         assert!(data
-            .join("icons/hicolor/scalable/apps/horizon.svg")
+            .join("icons/hicolor/scalable/apps/ferrite.svg")
             .exists());
         assert!(install_in(&data, Path::new("/opt/b/horizon-launcher")).unwrap());
         let entry = fs::read_to_string(data.join("applications").join(LAUNCHER_ENTRY)).unwrap();
@@ -284,6 +288,30 @@ mod tests {
         assert!(!png.exists());
         remove_in(&data).unwrap();
         let _ = fs::remove_dir_all(&data);
+    }
+
+    #[test]
+    fn installing_and_removing_ferrite_preserves_horizon_entries_and_icons() {
+        let data = tempfile::tempdir().unwrap();
+        let upstream = [
+            "applications/horizon-launcher.desktop",
+            "applications/horizon.desktop",
+            "icons/hicolor/48x48/apps/horizon.png",
+            "icons/hicolor/scalable/apps/horizon.svg",
+        ];
+        for file in upstream {
+            let path = data.path().join(file);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, b"upstream").unwrap();
+        }
+        install_in(data.path(), Path::new("/opt/ferrite/horizon-launcher")).unwrap();
+        for file in upstream {
+            assert_eq!(fs::read(data.path().join(file)).unwrap(), b"upstream");
+        }
+        remove_in(data.path()).unwrap();
+        for file in upstream {
+            assert_eq!(fs::read(data.path().join(file)).unwrap(), b"upstream");
+        }
     }
 
     #[test]

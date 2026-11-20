@@ -65,60 +65,6 @@ enum RustCmd {
     Remove,
 }
 #[derive(Subcommand)]
-enum ServersCmd {
-    /// The servers, their folder and whether they run
-    List,
-    /// Create a server; with no options it is a new world, survival, normal, 10 players, friends only
-    Create {
-        #[arg(long, default_value = "My server")]
-        name: String,
-        /// The new world's seed (default: random)
-        #[arg(long, conflicts_with = "copy_world")]
-        seed: Option<String>,
-        /// Start from a copy of this world folder (one of your saves)
-        #[arg(long)]
-        copy_world: Option<PathBuf>,
-        #[arg(long, default_value = "survival", value_parser = ["survival", "creative", "adventure", "spectator"])]
-        mode: String,
-        #[arg(long, default_value = "normal", value_parser = ["peaceful", "easy", "normal", "hard"])]
-        difficulty: String,
-        #[arg(long, default_value_t = 10)]
-        max_players: u32,
-        /// Let anyone in (no whitelist)
-        #[arg(long)]
-        open: bool,
-        /// Do not check players' Minecraft accounts (offline mode: anyone can use any name)
-        #[arg(long)]
-        offline: bool,
-        /// Kept for old scripts: account checking is now the default
-        #[arg(long, hide = true, conflicts_with = "offline")]
-        check_accounts: bool,
-        /// Who may join (repeatable); the first becomes an operator
-        #[arg(long = "player")]
-        players: Vec<String>,
-        /// The installed version whose programs and game files servers use, if none are set up yet
-        #[arg(long)]
-        version: Option<String>,
-        /// Agree to the Minecraft EULA (https://aka.ms/MinecraftEULA)
-        #[arg(long)]
-        accept_eula: bool,
-    },
-    /// Copy an installed, prepared version's programs and game files for the servers (again)
-    SetUp {
-        #[arg(long)]
-        version: Option<String>,
-    },
-    /// Run a horizon-server command on a server, for example: servers run "My server" -- status
-    Run {
-        /// The server's name or folder
-        server: String,
-        #[arg(last = true, required = true)]
-        args: Vec<String>,
-    },
-    /// Take a server off the list (its folder stays)
-    Forget { server: String },
-}
-#[derive(Subcommand)]
 enum AccountCmd {
     /// The signed-in accounts and which one plays
     List,
@@ -142,44 +88,6 @@ enum AccountCmd {
     },
     /// Play as this account
     Select { who: String },
-}
-
-#[derive(Subcommand)]
-enum DataCmd {
-    /// What is allowed, the install ID and how many items wait (the default)
-    Status,
-    /// Turn kinds on: performance, crashes, bugs, benchmarks, or all
-    Allow {
-        #[arg(required = true)]
-        kinds: Vec<String>,
-    },
-    /// Turn kinds off: performance, crashes, bugs, benchmarks, or all
-    Deny {
-        #[arg(required = true)]
-        kinds: Vec<String>,
-    },
-    /// Print exactly what would be sent
-    Show,
-    /// Delete everything sent from here, and what waits, and take a new install ID
-    Delete,
-    /// Send what is waiting now
-    Send,
-    /// Send a bug report you write; it is printed first, as it would leave
-    Bug {
-        text: String,
-        /// Add the end of the game's log (scrubbed, without chat)
-        #[arg(long)]
-        log: bool,
-        /// Send without asking
-        #[arg(long)]
-        yes: bool,
-    },
-    /// Upload a benchmark report (docs/benchmark-report.md); it is printed first
-    Benchmark {
-        file: PathBuf,
-        #[arg(long)]
-        yes: bool,
-    },
 }
 
 #[derive(Subcommand)]
@@ -937,20 +845,6 @@ enum Cmd {
         #[arg(long)]
         remove: bool,
     },
-    /// Write a bug report to a file you attach to the issue by hand; nothing is sent
-    /// (docs/telemetry.md)
-    BugReport {
-        text: String,
-        /// Add the end of the game's log (names and worlds hidden, without chat)
-        #[arg(long)]
-        log: bool,
-    },
-    /// Opt-in data collection (docs/telemetry.md): what is allowed, what would be sent, and
-    /// deleting it; all off until you allow a kind
-    Data {
-        #[command(subcommand)]
-        action: Option<DataCmd>,
-    },
     /// Instances: separate game folders, each with its own worlds, options and packs
     Instance {
         #[command(subcommand)]
@@ -1000,25 +894,6 @@ enum Cmd {
         #[command(subcommand)]
         action: Option<RustCmd>,
     },
-    /// Servers hosted with horizon-server (the Servers page): list them, create one, or run any
-    /// horizon-server command on one
-    Servers {
-        #[command(subcommand)]
-        action: Option<ServersCmd>,
-    },
-    /// Serve the Model Context Protocol on stdin and stdout, for AI agents (refused while No AI
-    /// is on)
-    Mcp,
-    /// How to connect an AI agent (Claude Code, Codex, Cursor, any MCP client) to `mcp`: the
-    /// config to paste and the command that adds it (refused while No AI is on)
-    AgentConfig {
-        /// Only this client
-        #[arg(long, value_parser = ["claude-code", "codex", "cursor", "generic"])]
-        client: Option<String>,
-        /// Start the MCP server as a client would and say whether it answered
-        #[arg(long)]
-        test: bool,
-    },
     /// Show or set No AI: on hides and turns off every AI feature (the companion, agent control,
     /// horizon-ctl and both MCP servers); off, the default, makes them available
     NoAi {
@@ -1035,14 +910,10 @@ enum Cmd {
     },
 }
 
-/// The CLI's definition, for the MCP tools generated from it (cli_tools.rs).
+/// The CLI's definition.
 pub fn command() -> clap::Command {
     <Cli as clap::CommandFactory>::command()
 }
-
-/// The commands that exist for AI agents: hidden and refused while No AI is on. Every other
-/// command stays: the launcher, packagers and scripts need them, and none drives the game.
-pub const AI_COMMANDS: [&str; 2] = ["mcp", "agent-config"];
 
 /// The keys `settings` sets.
 const SETTING_KEYS: [&str; 14] = [
@@ -1165,27 +1036,12 @@ fn set_setting(s: &mut backend::Settings, key: &str, value: &str) -> Result<(), 
 /// Runs a subcommand and returns the exit code, or None when the window should open.
 pub fn run() -> Option<i32> {
     use clap::FromArgMatches;
-    let no_ai = backend::no_ai();
-    let mut definition = command();
-    if no_ai {
-        // Hidden from the help too; a call still gets the refusal below.
-        for name in AI_COMMANDS {
-            definition = definition.mut_subcommand(name, |c| c.hide(true));
-        }
-    }
-    let cli = Cli::from_arg_matches(&definition.get_matches()).unwrap_or_else(|e| e.exit());
+    let cli = Cli::from_arg_matches(&command().get_matches()).unwrap_or_else(|e| e.exit());
     let command = cli.command?;
-    let result = match command {
-        Cmd::Mcp | Cmd::AgentConfig { .. } if no_ai => Err(horizon_platform::no_ai::REFUSAL.into()),
-        Cmd::Mcp => crate::mcp::serve().map(|()| 0),
-        command => {
-            let result = execute(command, cli.json);
-            // A game it started has ended (attached) or none did (an error): a session file it
-            // didn't read goes now.
-            account::discard_unread_sessions();
-            result
-        }
-    };
+    let result = execute(command, cli.json);
+    // A game it started has ended (attached) or none did (an error): a session file it didn't
+    // read goes now.
+    account::discard_unread_sessions();
     Some(match result {
         Ok(code) => code,
         Err(e) => {
@@ -1626,7 +1482,6 @@ fn execute(command: Cmd, as_json: bool) -> Result<i32, String> {
             }
         }
         Cmd::Account { action } => account_command(action.unwrap_or(AccountCmd::List), as_json)?,
-        Cmd::Data { action } => data(action.unwrap_or(DataCmd::Status), as_json)?,
         Cmd::Benchmark { repeats } => {
             let path = crate::perf::benchmark(repeats.max(1))?;
             if as_json {
@@ -1663,47 +1518,6 @@ fn execute(command: Cmd, as_json: bool) -> Result<i32, String> {
             } else {
                 println!("No AI is off: AI features are available.");
             }
-        }
-        Cmd::AgentConfig { test: true, .. } => {
-            let tools = horizon_launcher::agents::self_test(&backend::update_target())?;
-            if as_json {
-                json(serde_json::json!({ "answered": true, "tools": tools }));
-            } else {
-                println!("The MCP server answered with {tools} tools.");
-            }
-        }
-        Cmd::AgentConfig { client, .. } => {
-            use horizon_launcher::agents;
-            let exe = &backend::update_target();
-            if as_json {
-                let mut all = agents::json(exe);
-                if let Some(id) = &client {
-                    all["clients"] = all["clients"]
-                        .as_array()
-                        .into_iter()
-                        .flatten()
-                        .filter(|c| c["id"] == id.as_str())
-                        .cloned()
-                        .collect();
-                }
-                json(all);
-                return Ok(0);
-            }
-            for c in agents::clients(exe)
-                .iter()
-                .filter(|c| client.as_ref().is_none_or(|id| id == c.id))
-            {
-                println!("{}", c.name);
-                if let Some(line) = c.add_line() {
-                    println!("  Add it with:  {line}");
-                }
-                println!("  Or put this in {}:", c.file);
-                for line in c.config.lines() {
-                    println!("    {line}");
-                }
-                println!();
-            }
-            println!("Then ask your agent to say hello: it can call the links tool, or play.");
         }
         Cmd::Settings { key, value } => {
             let mut settings = backend::Settings::load();
@@ -1784,30 +1598,16 @@ fn execute(command: Cmd, as_json: bool) -> Result<i32, String> {
             }
         }
         Cmd::Update { check } => update(check, as_json)?,
-        Cmd::BugReport { text, log } => {
-            if let Some(note) = old_launcher_note() {
-                eprintln!("{note}");
-            }
-            let path = horizon_launcher::bug_report::write(&text, log)?;
-            if as_json {
-                json(serde_json::json!({ "path": path }));
-            } else {
-                println!(
-                    "Wrote {}: read it, then attach it to your issue.",
-                    path.display()
-                );
-            }
-        }
         Cmd::DesktopEntry { remove } => {
             let mut settings = backend::Settings::load();
             settings.desktop_entry = Some(!remove);
             settings.save()?;
             if remove {
                 horizon_launcher::desktop::remove()?;
-                println!("Removed Horizon from the applications menu.");
+                println!("{}", tr("Removed Horizon from the applications menu."));
             } else {
                 horizon_launcher::desktop::install(backend::exe_path())?;
-                println!("Horizon is in the applications menu.");
+                println!("{}", tr("Horizon is in the applications menu."));
             }
         }
         Cmd::Worlds { action } => worlds(
@@ -1832,10 +1632,8 @@ fn execute(command: Cmd, as_json: bool) -> Result<i32, String> {
         Cmd::Instance { action } => instance(action.unwrap_or(InstanceCmd::List), as_json)?,
         Cmd::Modpack { action } => return modpack(action.unwrap_or(ModpackCmd::List), as_json),
         Cmd::Mods { action } => mods(action.unwrap_or(ModsCmd::List { instance: None }), as_json)?,
-        Cmd::Servers { action } => servers(action.unwrap_or(ServersCmd::List), as_json)?,
         Cmd::Rust { action } => rust(action.unwrap_or(RustCmd::Status), as_json)?,
         Cmd::Java { action } => java(action.unwrap_or(JavaCmd::List), as_json)?,
-        Cmd::Mcp => unreachable!(),
     }
     Ok(0)
 }
@@ -2092,195 +1890,7 @@ fn account_command(action: AccountCmd, as_json: bool) -> Result<(), String> {
     }
     Ok(())
 }
-/// What a bug report says first when a newer launcher is out (#18631).
-fn old_launcher_note() -> Option<String> {
-    use horizon_launcher::bug_report;
-    bug_report::old_launcher_note(backend::VERSION, bug_report::newer_launcher().as_deref())
-}
 
-/// `data`: the same consent as Settings → Data collection.
-fn data(action: DataCmd, as_json: bool) -> Result<(), String> {
-    use horizon_launcher::telemetry;
-    let review =
-        |item: &horizon_telemetry::Item, yes: bool, note: Option<String>| -> Result<bool, String> {
-            println!(
-                "{}",
-                serde_json::to_string_pretty(item).map_err(|e| e.to_string())?
-            );
-            if let Some(note) = note {
-                eprintln!("{note}");
-            }
-            if yes {
-                return Ok(true);
-            }
-            if !std::io::stdin().is_terminal() {
-                return Err("Add --yes to send it without asking.".into());
-            }
-            eprint!("Send this? [y/N] ");
-            let mut line = String::new();
-            std::io::stdin()
-                .read_line(&mut line)
-                .map_err(|e| e.to_string())?;
-            Ok(line.trim().eq_ignore_ascii_case("y"))
-        };
-    match action {
-        DataCmd::Status => {
-            let status = telemetry::status_json();
-            if as_json {
-                json(status);
-                return Ok(());
-            }
-            let consent = telemetry::consent();
-            if consent.needs_asking() {
-                println!("Not answered yet: nothing is collected.");
-            }
-            for (kind, name, _, _) in telemetry::SWITCHES {
-                let on = consent.allows(kind);
-                println!("{name}: {}", if on { "on" } else { "off" });
-            }
-            println!("Waiting to be sent: {}", status["waiting"]);
-            match horizon_telemetry::endpoint() {
-                Some(url) => println!("Server: {url}"),
-                None => println!("Server: turned off (HORIZON_TELEMETRY_URL=off), nothing is sent"),
-            }
-        }
-        DataCmd::Allow { kinds } => {
-            telemetry::set(&telemetry::parse_kinds(&kinds)?, true)?;
-            return data(DataCmd::Status, as_json);
-        }
-        DataCmd::Deny { kinds } => {
-            telemetry::set(&telemetry::parse_kinds(&kinds)?, false)?;
-            return data(DataCmd::Status, as_json);
-        }
-        DataCmd::Show => {
-            let (what, text) = telemetry::preview();
-            eprintln!("{what}");
-            println!("{text}");
-        }
-        DataCmd::Delete => println!("{}", telemetry::delete_my_data()?),
-        DataCmd::Send => println!("{:?}", telemetry::send()),
-        DataCmd::Bug { text, log, yes } => {
-            telemetry::ensure_allowed(horizon_telemetry::Kind::Bug)?;
-            let item = telemetry::bug_report(&text, log)?;
-            if review(&item, yes, old_launcher_note())? {
-                println!("{}", telemetry::submit(&item)?);
-            }
-        }
-        DataCmd::Benchmark { file, yes } => {
-            telemetry::ensure_allowed(horizon_telemetry::Kind::Benchmark)?;
-            let item = telemetry::benchmark_report(&file)?;
-            if review(&item, yes, None)? {
-                println!("{}", telemetry::submit(&item)?);
-            }
-        }
-    }
-    Ok(())
-}
-fn servers(action: ServersCmd, as_json: bool) -> Result<(), String> {
-    use horizon_launcher::servers::{self, NewServer, World};
-    let find = |which: &str| {
-        servers::list()
-            .into_iter()
-            .find(|e| e.name == which || e.dir == std::path::Path::new(which))
-            .ok_or_else(|| {
-                format!("No server called {which}: `horizon-launcher servers` lists them")
-            })
-    };
-    match action {
-        ServersCmd::List => {
-            let list = servers::list();
-            if as_json {
-                json(serde_json::Value::Array(
-                    list.iter()
-                        .map(|e| {
-                            serde_json::json!({
-                                "name": e.name, "dir": e.dir,
-                                "phase": servers::status(&e.dir).phase,
-                            })
-                        })
-                        .collect(),
-                ));
-            } else if list.is_empty() {
-                println!("No server yet: horizon-launcher servers create --accept-eula");
-            }
-            for e in list.iter().filter(|_| !as_json) {
-                println!(
-                    "{}  ({}): {}",
-                    e.name,
-                    e.dir.display(),
-                    servers::status(&e.dir).phase
-                );
-            }
-        }
-        ServersCmd::Create {
-            name,
-            seed,
-            copy_world,
-            mode,
-            difficulty,
-            max_players,
-            open,
-            offline,
-            check_accounts: _,
-            players,
-            version,
-            accept_eula,
-        } => {
-            let spec = NewServer {
-                name,
-                world: match copy_world {
-                    Some(dir) => World::Copy(dir),
-                    None => World::New {
-                        seed: seed.unwrap_or_default(),
-                    },
-                },
-                game_mode: mode,
-                difficulty,
-                max_players,
-                friends_only: !open,
-                check_accounts: !offline,
-                players,
-                eula: accept_eula,
-            };
-            let tag = backend::resolve_version(version.as_deref()).ok();
-            let entry = servers::create(&spec, tag.as_deref(), &|l| eprintln!("{l}"))
-                .map_err(|p| p.message)?;
-            if as_json {
-                json(serde_json::json!({ "name": entry.name, "dir": entry.dir }));
-            } else {
-                println!("Created {} in {}", entry.name, entry.dir.display());
-            }
-        }
-        ServersCmd::SetUp { version } => {
-            let tag = backend::resolve_version(version.as_deref())?;
-            servers::set_up(&tag)?;
-            println!(
-                "Servers run Horizon {}",
-                servers::runtime_release().unwrap_or(tag)
-            );
-        }
-        ServersCmd::Run { server, args } => {
-            let entry = find(&server)?;
-            let args: Vec<&str> = args.iter().map(String::as_str).collect();
-            let status = servers::command(&entry.dir, &args)?
-                .status()
-                .map_err(|e| e.to_string())?;
-            if !status.success() {
-                return Err(format!("horizon-server exited with {status}"));
-            }
-        }
-        ServersCmd::Forget { server } => {
-            let entry = find(&server)?;
-            servers::forget(&entry.dir)?;
-            println!(
-                "{} is off the list; its folder stays in {}",
-                entry.name,
-                entry.dir.display()
-            );
-        }
-    }
-    Ok(())
-}
 /// Installs the native mods of `found` (a GitHub link, resolved) into the game folder `home`: the
 /// warning and the exact source link first, and nothing downloaded without `trust`.
 fn mods(action: ModsCmd, as_json: bool) -> Result<(), String> {
