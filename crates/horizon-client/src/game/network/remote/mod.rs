@@ -2504,6 +2504,11 @@ impl Game<'_> {
         let freed =
             horizon_client::streaming::Streaming::take_remote_columns(&mut self.world, gone);
         self.streaming.forget_columns(&mut self.world, gone);
+        self.streaming.free(
+            self.pending_uploads
+                .extract_if(.., |((x, _, z), _)| gone.contains(&(*x, *z)))
+                .collect(),
+        );
         if keep_terrain && let Some(lod) = &mut self.lod {
             for chunk in &freed {
                 lod.observe(chunk.clone(), self.res.facts());
@@ -13491,6 +13496,26 @@ pub(crate) mod tests {
             assert!(game.world.chunks.contains_key(&(0, 0)));
             let mut gone = [(0, 0)].into_iter().collect();
             assert_eq!(game.forget_remote_columns(&mut gone, true), [(0, 0)]);
+        });
+    }
+
+    #[test]
+    #[ignore = "daily"]
+    fn forgotten_columns_discard_queued_meshes_even_if_readopted_before_upload() {
+        use super::super::native_entity_refs::tests::with_game;
+        use horizon_client::chunk::Chunk;
+
+        with_game(|game| {
+            for x in [0, 1] {
+                game.streaming
+                    .insert_remote(&mut game.world, Chunk::empty(x, 0));
+                game.pending_uploads.push(((x, 0, 0), Default::default()));
+            }
+            game.forget_remote_columns(&mut [(0, 0)].into_iter().collect(), true);
+            game.streaming
+                .insert_remote(&mut game.world, Chunk::empty(0, 0));
+            assert_eq!(game.pending_uploads.len(), 1);
+            assert_eq!(game.pending_uploads[0].0, (1, 0, 0));
         });
     }
 
