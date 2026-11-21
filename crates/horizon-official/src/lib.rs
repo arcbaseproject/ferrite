@@ -38,9 +38,9 @@ static MOD_LINKS: [mod_links::Links; 2] = [
         issues: Some(horizon_addresses::MINECRAFT_ISSUES),
     },
     mod_links::Links {
-        id: "horizon",
+        id: "ferrite",
         license: Some(horizon_addresses::LICENSE),
-        homepage: Some(horizon_addresses::WEBSITE),
+        homepage: Some(horizon_addresses::REPOSITORY),
         issues: Some(horizon_addresses::ISSUES),
     },
 ];

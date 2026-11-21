@@ -172,10 +172,10 @@ impl Game<'_> {
                     }
                     // Horizon's own passes, in a group of their own.
                     let own_lines = self.renderer.as_ref().map_or_else(Vec::new, |r| {
-                        overlay::labelled_pass_lines("Horizon GPU", &r.own_pass_times())
+                        overlay::labelled_pass_lines("Ferrite GPU", &r.own_pass_times())
                     });
                     if self.debug && !own_lines.is_empty() {
-                        d.group("Horizon passes", own_lines);
+                        d.group("Ferrite passes", own_lines);
                     }
                     let detail_lines = self.renderer.as_ref().map_or_else(Vec::new, |r| {
                         let support = r.pass_detail_support().filter(|_| r.pass_detail());
@@ -188,7 +188,7 @@ impl Game<'_> {
                         })
                     });
                     if self.debug && !detail_lines.is_empty() {
-                        d.group("Horizon pass detail", detail_lines);
+                        d.group("Ferrite pass detail", detail_lines);
                     }
                 }
                 "tps" => self.debug_tps_line(d),

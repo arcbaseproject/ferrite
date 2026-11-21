@@ -24,9 +24,17 @@ const SECTIONS: [(&str, &str); 8] = [
     ("About", "information-circle"),
 ];
 
-/// Who made the launcher's look, credited in About.
-const CREDIT: &str = "Xmilon";
-const CREDIT_URL: &str = horizon_addresses::LAUNCHER_LOOK_CREDIT;
+/// About's credits: the line, the name in it, the link and its button, the GitHub profile whose
+/// picture shows.
+const CREDITS: [(&str, &str, &str, &str, &str); 1] = [
+    (
+        "Ferrite by {name}",
+        "arcbaseproject",
+        horizon_addresses::REPOSITORY,
+        "Open on GitHub",
+        horizon_addresses::MAKER,
+    ),
+];
 
 /// What the search finds in each section, in [`SECTIONS`]' order: its rows' names and words a
 /// player may look for them by. English; a query matches them and their translation.
@@ -74,7 +82,7 @@ const INDEX: [&[&str]; 8] = [
     &["Proxy"],
     &["Storage", "Disk space", "Cache"],
     &[
-        "UI made by Xmilon",
+        "Ferrite by arcbaseproject",
         "Credits",
         "GitHub",
         "Version",
@@ -673,7 +681,7 @@ impl Launcher {
                 .into_any_element()
         };
         let about = section(7)
-            .child(self.credit_row(cx))
+            .child(self.credit_row(0, cx))
             .child(self.version_row(&t))
             .child(self.location_row(0, cx).mb(px(0.)))
             .child(index_row(
@@ -721,19 +729,20 @@ impl Launcher {
     }
 
     /// About's credit: who made the launcher's look, their GitHub picture and profile.
-    fn credit_row(&mut self, cx: &mut Context<Self>) -> Div {
+    fn credit_row(&mut self, i: usize, cx: &mut Context<Self>) -> Div {
         let t = self.theme;
-        if !self.credit_asked {
-            self.credit_asked = true;
-            let picture = cx.background_spawn(async {
-                backend::get_bytes(&format!("{CREDIT_URL}.png?size=96"))
+        let (line, name, url, label, profile) = CREDITS[i];
+        if !self.credit_asked[i] {
+            self.credit_asked[i] = true;
+            let picture = cx.background_spawn(async move {
+                backend::get_bytes(&format!("{profile}.png?size=96"))
             });
             cx.spawn(async move |this, cx| {
                 if let Ok(bytes) = picture.await {
                     let _ = this.update(cx, |this, cx| {
                         // GitHub answers with a JPEG (or PNG for some accounts): decode what came.
                         if let Some(format) = picture_format(&bytes) {
-                            this.credit_picture =
+                            this.credit_picture[i] =
                                 Some(std::sync::Arc::new(gpui::Image::from_bytes(format, bytes)));
                         }
                         cx.notify();
@@ -753,12 +762,12 @@ impl Launcher {
             .border_1()
             .border_color(white(ui::edge::REST))
             .bg(white(0.06))
-            .child(match self.credit_picture.clone() {
+            .child(match self.credit_picture[i].clone() {
                 Some(image) => gpui::img(image).size_full().into_any_element(),
                 None => ui::icon("github", 22., white(ink::BODY)).into_any_element(),
             });
-        let open = button("credit-github", "Open GitHub profile", Kind::Secondary, &t)
-            .on_click(|_, _, cx| cx.open_url(CREDIT_URL));
+        let open = button(format!("credit-github-{i}"), label, Kind::Secondary, &t)
+            .on_click(move |_, _, cx| cx.open_url(url));
         div()
             .flex()
             .items_center()
@@ -774,12 +783,12 @@ impl Launcher {
                     .min_w_0()
                     .child(
                         ui::text(14., FontWeight::MEDIUM, ink::FULL)
-                            .child(trf("UI made by {name}", &[("name", CREDIT)])),
+                            .child(trf(line, &[("name", name)])),
                     )
                     .child(
                         ui::text(13., FontWeight::NORMAL, ink::QUIET)
                             .mt(px(2.))
-                            .child(CREDIT_URL.trim_start_matches("https://")),
+                            .child(url.trim_start_matches("https://")),
                     ),
             )
             .child(open)

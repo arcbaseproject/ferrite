@@ -52,6 +52,8 @@ else:  # run as tools/ci/nightly.py: its folder is on the path
 DATED = re.compile(r"^nightly-(\d{4}-\d{2}-\d{2})$")
 TITLE_DATE = re.compile(r"Nightly (\d{4}-\d{2}-\d{2})")
 SOURCE_TAG = "nightly-source/"
+# Repositories whose Nightly is main alone (a release), not a fork's PR picks: Horizon and Ferrite.
+MAIN_REPOS = ("horizon-rust/horizon", "arcbaseproject/ferrite")
 
 
 @dataclass
@@ -190,7 +192,7 @@ def build_set(main: Ref, prs: list[dict], left_out: list[str], today: str, force
         state, _, _ = ns.load_state()
         asked_in = issue or next((x["issue"] for x in reversed(state.get("log", [])) if x.get("issue")), "")
         stop(repo, asked_in, f"the build stopped: {c.text()}")
-    if repo == "horizon-rust/horizon" and sha != main.sha:
+    if repo in MAIN_REPOS and sha != main.sha:
         stop(repo, issue, f"the build stopped: final source {sha} is not main's commit {main.sha}, the one an SDK is built for.")
     previous = git("ls-remote", "--tags", "origin", "refs/tags/nightly").split("\t")[0] or None
     build = force or previous != sha
@@ -358,7 +360,7 @@ def pick(force: bool) -> None:
     repo, token = os.environ.get("GITHUB_REPOSITORY", ""), os.environ.get("GH_TOKEN", "")
     main = green_base(repo, os.environ.get("NIGHTLY_ISSUE", ""))
     dry_run = os.environ.get("DRY_RUN") == "true"
-    if repo == "horizon-rust/horizon":
+    if repo in MAIN_REPOS:
         if os.environ.get("NIGHTLY_PRS", "").strip():
             stop(repo, os.environ.get("NIGHTLY_ISSUE", ""), "a Nightly builds main's commit, the one its SDK is built for, not PR picks")
         return build_set(main, [], [], today, force, dry_run)

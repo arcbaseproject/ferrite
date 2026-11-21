@@ -22,7 +22,8 @@ use std::path::{Path, PathBuf};
 pub(crate) const API: &str = "https://api.github.com";
 /// Kira's read-only mirror of Horizon's release reads. `HORIZON_GITHUB_MIRROR` replaces it (an
 /// empty value turns it off).
-pub const MIRROR: &str = "https://mcp.playhorizon.dev/github/public";
+// Ferrite: off. Kira mirrors only Horizon's repository, not Ferrite's.
+pub const MIRROR: &str = "";
 
 /// How long a saved answer is used without asking again: the launcher looks for releases every
 /// [`backend::CHECK_EVERY`], so a few minutes late at worst.

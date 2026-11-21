@@ -235,11 +235,11 @@ struct Launcher {
     whats_new_open: Option<std::collections::HashSet<String>>,
     /// The section the glass Settings list marked when last drawn (`glass_settings`).
     settings_marked: usize,
-    /// About's credit picture was asked for, and what came back.
-    credit_asked: bool,
+    /// About's credit pictures were asked for, and what came back (`glass_settings::CREDITS`).
+    credit_asked: [bool; 1],
     /// The Game version dropdown of the instance dialog and sheet is open.
     version_menu: bool,
-    credit_picture: Option<std::sync::Arc<gpui::Image>>,
+    credit_picture: [Option<std::sync::Arc<gpui::Image>>; 1],
     /// The instance sheet's Storage: which instance was measured, and its size once known.
     sheet_size: Option<(String, Option<u64>)>,
     /// The Mods page's project card, kept in view beside its list.

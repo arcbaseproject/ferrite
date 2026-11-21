@@ -32,9 +32,6 @@ RUST_DECIDES = {"tools/ci/rust_changes.py", "tools/release_train.py"}
 # tests/test_ci_rust_changes.py, which finds every embed in the Rust sources.
 EMBEDDED = {
     "crates/horizon-mod-api-gen/coverage-notes.md": ("crates/horizon-mod-api-gen/src/wire/host.rs",),
-    "docs/media/nether.webp": ("launcher/src/glass_server_dialog.rs",),
-    "docs/media/underwater.webp": ("launcher/src/glass_server_dialog.rs",),
-    "docs/media/village.webp": ("launcher/src/glass_server_dialog.rs",),
     "docs/modpacks/atm10-mods.csv": ("crates/horizon-port-pack/src/classify.rs",),
     "docs/parity/random-chance-seeded.jsonl": (
         "crates/horizon-client/src/advancements.rs",

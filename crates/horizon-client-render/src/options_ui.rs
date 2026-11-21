@@ -7865,21 +7865,9 @@ mod tests {
                 Page::Pvp,
                 Page::SplitSetup,
                 Page::Studio,
-                Page::Agent,
                 Page::ModBrowser,
             ]
         );
-        // No AI hides the AI Agent page.
-        let mut no_ai = Settings::default();
-        no_ai.extras.no_ai = true;
-        let (widgets, _, _, _) = ui.layout(&no_ai, 427.0, 240.0);
-        assert!(!widgets.iter().any(|w| matches!(
-            &w.kind,
-            WKind::Button {
-                act: Act::Push(Page::Agent),
-                ..
-            }
-        )));
         // The AI Agent page: the switch, Copy and the status the game sets.
         ui.push(Page::Agent);
         ui.agent_status = vec!["Waiting for an agent.".into()];

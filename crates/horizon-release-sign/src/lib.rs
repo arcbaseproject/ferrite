@@ -29,6 +29,8 @@ pub const SIGNATURE: &str = "SHA256SUMS.sig";
 pub const SIGNATURE_V2: &str = "SHA256SUMS.v2.sig";
 
 const KEYS: &str = include_str!("../release-keys.txt");
+/// Ferrite's own release keys: its releases are signed apart from Horizon's.
+const FERRITE_KEYS: &str = include_str!("../ferrite-release-keys.txt");
 const LEGACY: &str = include_str!("../legacy-releases.txt");
 
 /// An Ed25519 public key.
@@ -40,7 +42,8 @@ pub fn trusted_keys() -> Vec<PublicKey> {
     trusted_keys_for("horizon-rust/horizon")
 }
 
-/// Repository-scoped release trust: `release-keys.txt` for horizon-rust/horizon. Any other repository has no
+/// Repository-scoped release trust: `release-keys.txt` for horizon-rust/horizon, `ferrite-release-keys.txt` for
+/// arcbaseproject/ferrite. Any other repository has no
 /// trusted keys, so its downloads fail closed.
 pub fn trusted_keys_for(repository: &str) -> Vec<PublicKey> {
     parse_keys(repository_keys(repository, KEYS)).unwrap_or_default()
@@ -92,6 +95,7 @@ fn extra_sdk_keys() -> Vec<PublicKey> {
 fn repository_keys<'a>(repository: &str, keys: &'a str) -> &'a str {
     match repository {
         "horizon-rust/horizon" => keys,
+        "arcbaseproject/ferrite" => FERRITE_KEYS,
         _ => "",
     }
 }

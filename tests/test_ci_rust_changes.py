@@ -216,7 +216,6 @@ class EmbeddedFileTests(unittest.TestCase):
                      "crates/horizon-mod-api-gen/coverage-notes.md"]:
             with self.subTest(path=path):
                 self.assertTrue(needs_rust([path]))
-        self.assertTrue(needs_launcher(["docs/media/village.webp"]))
         self.assertFalse(needs_rust(["docs/setup.md", "docs/modpacks.md", "README.md"]))
 
     def test_the_embedded_list_is_every_embed_the_rules_would_skip(self):

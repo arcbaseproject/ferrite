@@ -2076,9 +2076,9 @@ mod tests {
         for (server, shown) in [
             (
                 Some("Nightly 2000-01-01 · 0000000"),
-                "Horizon Nightly 2000-01-01 · 0000000",
+                "Ferrite Nightly 2000-01-01 · 0000000",
             ),
-            (None, "an older Horizon build"),
+            (None, "an older Ferrite build"),
         ] {
             let payloads =
                 crate::raw_payloads::Transport::capture(crate::raw_payloads::Side::Client).unwrap();
@@ -2092,7 +2092,7 @@ mod tests {
             let error = result.err().unwrap();
             assert!(
                 error.text.starts_with(&format!(
-                    "This server runs {shown}; your game is Horizon {this}."
+                    "This server runs {shown}; your game is Ferrite {this}."
                 )),
                 "{}",
                 error.text

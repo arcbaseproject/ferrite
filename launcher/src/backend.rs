@@ -11,7 +11,7 @@ use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 
 /// Authority for game, launcher and native SDK release reads on this fork.
-pub const REPO: &str = "horizon-rust/horizon";
+pub const REPO: &str = "arcbaseproject/ferrite";
 
 /// Where a crash is reported.
 pub fn issues_url() -> String {
@@ -3488,8 +3488,8 @@ fn launcher_asset_running_from(appimage: bool) -> Option<&'static str> {
 
 /// Development builds and `HORIZON_LAUNCHER_NO_SELF_UPDATE` never replace themselves.
 pub fn self_update_allowed() -> bool {
-    // Ferrite fork: updates come from upstream Horizon's releases, which would replace this launcher.
-    false
+    // Ferrite's own signed releases (REPO), never upstream Horizon's.
+    !cfg!(debug_assertions) && std::env::var_os("HORIZON_LAUNCHER_NO_SELF_UPDATE").is_none()
 }
 
 /// The version in `horizon-launcher --version`'s output (`horizon-launcher 0.1.5`).

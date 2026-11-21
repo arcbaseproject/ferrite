@@ -96,11 +96,11 @@ impl Entry {
     }
     fn horizon() -> Self {
         Self {
-            id: "horizon".into(),
-            name: "Horizon".into(),
+            id: "ferrite".into(),
+            name: "Ferrite".into(),
             version: horizon_core::release::VERSION.into(),
-            authors: "Ludovic Marie and the Horizon contributors".into(),
-            license: "MIT".into(),
+            authors: "arcbaseproject, on Horizon by Ludovic Marie and its contributors".into(),
+            license: "LGPL-3.0-or-later".into(),
             description: crate::lang::get("horizon.mods.screen.horizon.description"),
             ..Self::default()
         }
@@ -1212,7 +1212,7 @@ mod tests {
             Some("https://aka.ms/MinecraftEULA")
         );
         let first = Links {
-            id: "horizon",
+            id: "ferrite",
             license: Some("https://example.org/LICENSE"),
             homepage: Some("https://example.org"),
             issues: Some("https://example.org/issues"),
@@ -1278,12 +1278,12 @@ mod tests {
         let m = Measure(&atlas.font);
         let mut screen =
             ModsScreen::new(427, 240, false, &mods(&[installed("zoom", "Zoom", None)]));
-        assert_eq!(names(&screen), ["Horizon", "Minecraft", "Zoom"]);
+        assert_eq!(names(&screen), ["Ferrite", "Minecraft", "Zoom"]);
         // The sort button reverses the order.
         let (action, sound) =
             screen.click(&m, centre(screen.geo().sort).0, centre(screen.geo().sort).1);
         assert_eq!((action, sound), (Action::None, true));
-        assert_eq!(names(&screen), ["Zoom", "Minecraft", "Horizon"]);
+        assert_eq!(names(&screen), ["Zoom", "Minecraft", "Ferrite"]);
         // The search keeps the names that contain it, in any case.
         let (x, y) = centre(screen.geo().search);
         screen.click(&m, x, y);
@@ -1430,7 +1430,7 @@ mod tests {
             .collect();
         let mut screen = ModsScreen::new(427, 240, false, &mods(&list));
         screen.step(1);
-        assert_eq!(screen.current().map(|e| e.name.as_str()), Some("Horizon"));
+        assert_eq!(screen.current().map(|e| e.name.as_str()), Some("Ferrite"));
         for _ in 0..21 {
             screen.step(1);
         }
@@ -1439,7 +1439,7 @@ mod tests {
         screen.step(1);
         assert_eq!(screen.current().map(|e| e.name.as_str()), Some("Mod 19"));
         screen.step(-30);
-        assert_eq!(screen.current().map(|e| e.name.as_str()), Some("Horizon"));
+        assert_eq!(screen.current().map(|e| e.name.as_str()), Some("Ferrite"));
         assert_eq!(screen.list.amount, 0.0);
     }
 

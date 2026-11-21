@@ -221,8 +221,8 @@ class UntrustedBuildTests(unittest.TestCase):
         # The host-independent wasm member is built on a credential-free hosted Linux runner.
         hosted = [line for line in runs_on if line.strip() == "runs-on: ubuntu-22.04"]
         self.assertEqual(len(hosted), 1)
-        # The nightly's own runner: never the release runner, and never behind pull requests' parity queue.
-        nightly_runner = "fromJSON('[\"self-hosted\", \"macOS\", \"horizon-nightly\"]')"
+        # Ferrite: an untrusted build runs on a fresh GitHub-hosted Mac, never the release runner.
+        nightly_runner = "'macos-latest'"
         for line in runs_on:
             if line in hosted:
                 continue

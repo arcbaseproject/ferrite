@@ -31,9 +31,13 @@ pub const WEBSITE: &str = "https://playhorizon.dev";
 pub const MINECRAFT_WEBSITE: &str = "https://minecraft.net";
 pub const MINECRAFT_ISSUES: &str = "https://bugs.mojang.com";
 
-/// Horizon's license and issue tracker, offered by the official build's Mods screen.
-pub const LICENSE: &str = "https://github.com/horizon-rust/horizon/blob/main/LICENSE";
-pub const ISSUES: &str = "https://github.com/horizon-rust/horizon/issues";
+/// Ferrite's repository, license and issue tracker, offered by the official build's Mods screen.
+pub const REPOSITORY: &str = "https://github.com/arcbaseproject/ferrite";
+/// The GitHub profile of who makes Ferrite, credited in the launcher's About (its picture is
+/// `<this>.png`).
+pub const MAKER: &str = "https://github.com/arcbaseproject";
+pub const LICENSE: &str = "https://github.com/arcbaseproject/ferrite/blob/main/LICENSE";
+pub const ISSUES: &str = "https://github.com/arcbaseproject/ferrite/issues";
 
 /// Modpack file hosts, including GitHub's release redirects and the loader's Maven repository.
 /// The launcher and porting CLI pass this policy to the platform's checked downloader.
@@ -98,8 +102,8 @@ pub const MIXINS_TOOL_RELEASES: &str = "https://github.com/horizon-rust/horizon/
 /// Where the fork publishes each game build's mod SDK (`sdk-<build id>`) and the game releases
 /// whose `sdk.json` names their build; a release's tag and file follow. `HORIZON_SDK_BASE`
 /// overrides it.
-pub const SDK_RELEASES: &str = "https://github.com/horizon-rust/horizon/releases/download";
+pub const SDK_RELEASES: &str = "https://github.com/arcbaseproject/ferrite/releases/download";
 
 /// The fork's newest releases, which `cargo horizon-mod` reads to find the one SDK a short sha names.
 pub const SDK_RELEASE_LIST: &str =
-    "https://api.github.com/repos/horizon-rust/horizon/releases?per_page=100";
+    "https://api.github.com/repos/arcbaseproject/ferrite/releases?per_page=100";

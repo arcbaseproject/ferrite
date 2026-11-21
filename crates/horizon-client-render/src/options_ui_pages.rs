@@ -100,7 +100,7 @@ fn label_text(label: added::Label) -> Text {
 
 impl OptionsUi {
     /// Horizon Settings: its pages, then the pages crates registered for it.
-    pub(super) fn horizon_rows(&self, s: &Settings) -> Vec<Row> {
+    pub(super) fn horizon_rows(&self, _s: &Settings) -> Vec<Row> {
         // Two to a row, as vanilla's OptionsList.addSmall lays out
         // buttons; each opens one of Horizon's settings pages. Each page has
         // one way in: graphics and shader packs are Video Settings' (the graphics
@@ -124,15 +124,7 @@ impl OptionsUi {
                 ),
                 Some(open("horizon.pages.open.studio", Page::Studio)),
             ),
-            // No AI hides the AI Agent page and everything AI.
-            if s.extras.no_ai {
-                Row::Buttons(self.extra_button(s, crate::extras::Item::NoAi), None)
-            } else {
-                Row::Buttons(
-                    open("horizon.pages.open.agent", Page::Agent),
-                    Some(self.extra_button(s, crate::extras::Item::NoAi)),
-                )
-            },
+            // Ferrite shows no AI features: the AI Agent page stays for horizon-ctl's dev tools.
             Row::Buttons(open("horizon.mods.browse", Page::ModBrowser), None),
         ];
         self.added_entries(&mut rows);

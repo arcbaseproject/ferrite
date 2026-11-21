@@ -1,0 +1,2 @@
+# The public keys Ferrite's releases (arcbaseproject/ferrite) are signed with: one base64 Ed25519 key per line.
+# Empty: every Ferrite download is refused until tools/ci/new_release_key.sh makes the first key.

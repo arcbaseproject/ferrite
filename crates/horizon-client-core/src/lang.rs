@@ -564,6 +564,10 @@ impl Language {
         {
             apply_deprecated(&mut map, &bytes);
         }
+        // Ferrite's rebrand: the game's own strings name Horizon, the fork shows its own name.
+        for text in map.values_mut().filter(|t| t.contains("Horizon")) {
+            *text = text.replace("Horizon", "Ferrite");
+        }
         let bidirectional = available(sources)
             .iter()
             .any(|info| info.code == code && info.bidirectional);
