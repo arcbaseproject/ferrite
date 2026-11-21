@@ -650,7 +650,7 @@ pub fn tr_in(language: Language, en: &str) -> &str {
 fn rebrand(s: &str) -> &str {
     use std::sync::Mutex;
     static CACHE: OnceLock<Mutex<HashMap<String, &'static str>>> = OnceLock::new();
-    if !s.contains("Horizon") {
+    if !s.contains("Horizon") && !s.contains("horizon-launcher") {
         return s;
     }
     let mut cache = CACHE
@@ -660,7 +660,11 @@ fn rebrand(s: &str) -> &str {
     if let Some(&hit) = cache.get(s) {
         return hit;
     }
-    let out: &'static str = Box::leak(s.replace("Horizon", "Ferrite").into_boxed_str());
+    let out: &'static str = Box::leak(
+        s.replace("Horizon", "Ferrite")
+            .replace("horizon-launcher", "ferrite-launcher")
+            .into_boxed_str(),
+    );
     cache.insert(s.to_owned(), out);
     out
 }

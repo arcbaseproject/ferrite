@@ -41,6 +41,7 @@
   "Block Entities": "Аж ахуйн нэгжүүдийг блоклох",
   "BlueMap Radius": "Цэнхэр газрын зургийн радиус",
   "Blurs the world behind menus.": "Цэсний ард дэлхийг бүдэгрүүлнэ.",
+  "Sways the view while walking.": "Алхаж байхдаа үзэмжийг эргүүлнэ.",
   "Brightens dark places.": "Харанхуй газрыг гэрэлтүүлнэ.",
   "Brighter-than-white output on an HDR display.": "HDR дэлгэц дээр цагаанаас илүү тод гаралт.",
   "Brightness": "Гэрэлтүүлэг",

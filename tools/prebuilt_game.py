@@ -48,6 +48,8 @@ SMOKE = "prebuilt-smoke"
 # Where `smoke` installs the same executable without selected mods, for `start`.
 SMOKE_API = "prebuilt-smoke-api"
 EXECUTABLE = "horizon-client.exe" if sys.platform == "win32" else "horizon-client"
+# The name the launcher installs the game under (launcher backend::CLIENT).
+INSTALLED = "ferrite.exe" if sys.platform == "win32" else "ferrite"
 # The furthest a game started without its prepared files gets (game.rs `missing_resources`): past loading the
 # game's libraries and the mods' runtime environment (`entry::main_with`), where a split allocator aborts (arismoko/horizon#3877).
 NO_RESOURCES = "Horizon's prepared game files are missing"
@@ -687,9 +689,9 @@ def smoke(out: Path) -> None:
             records.append({"file": library.name, "sha256": sha256(library), "kind": "mod", "mod": mod,
                             "identity": build})
             install_package(installed / "horizon-native-mods" / mod, mod, source, dependencies)
-    shutil.copy2(out / RUNTIME / EXECUTABLE, installed / EXECUTABLE)
+    shutil.copy2(out / RUNTIME / EXECUTABLE, installed / INSTALLED)
     (installed / "native-mods.json").write_text(json.dumps({"libraries": records}))
-    if holder_mark() not in (installed / EXECUTABLE).read_bytes():
+    if holder_mark() not in (installed / INSTALLED).read_bytes():
         sys.exit("smoke: holder capability missing from the executable")
     for library in runtime_libraries(out):
         shutil.copy2(library, installed / library.name)
@@ -785,7 +787,7 @@ def start(out: Path) -> None:
             game.mkdir()
             # A dedicated server stops at an unaccepted EULA before it reaches the prepared files (the EULA is accepted).
             (game / "eula.txt").write_text("eula=true\n")
-            executable = installed / EXECUTABLE
+            executable = installed / INSTALLED
             if sys.platform == "darwin":
                 # Use the launcher's actual bundle preparation, not a second list of libraries.
                 bundle_source = scratch / "bundle.rs"
@@ -798,7 +800,7 @@ def start(out: Path) -> None:
                 bundle_tool = scratch / "bundle"
                 run(["rustc", "--edition=2021", str(bundle_source), "-o", str(bundle_tool)])
                 run([str(bundle_tool), str(installed)])
-                bundled = installed / "Horizon.app/Contents/MacOS/horizon-client"
+                bundled = installed / "Horizon.app/Contents/MacOS/ferrite"
                 executable = bundled
                 probe = subprocess.run([str(bundled), "--launch-api"], cwd=game, env=environment,
                                        capture_output=True, text=True, timeout=60)

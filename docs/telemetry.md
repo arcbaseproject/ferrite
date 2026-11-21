@@ -5,7 +5,6 @@ Horizon collects nothing unless the player says yes. The launcher asks once, wit
 Two exceptions:
 
 - The anonymous ["I'm playing" ping](#the-im-playing-ping) behind the launcher's "N playing now": it holds nothing about the player, and the launcher says so next to the switches.
-- The cosmetics service's *Show me as Horizon* (Extras › Cosmetics, on by default): a signed-in account tells the cosmetics service, at start and then every hour, that it plays Horizon, so other Horizon players see the Horizon mark beside its name. The service reports it for 3 hours, and anyone can ask it whether an account played Horizon in that window. Turning the setting off makes the service forget the account at once. It is not part of telemetry and the switches above don't cover it: see [cosmetics.md](cosmetics.md).
 
 ## Consent
 

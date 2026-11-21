@@ -237,7 +237,7 @@ pub fn find(dir: &Path, name: &str) -> Result<String, String> {
         .find(|b| b.name.len() == STAMP_LEN + label.len() && b.name.ends_with(&label))
         .map(|b| b.name.clone())
         .ok_or_else(|| {
-            format!("no backup {name:?} in {DIR}/ (`horizon-server backups` lists them)")
+            format!("no backup {name:?} in {DIR}/ (`ferrite-server backups` lists them)")
         })
 }
 

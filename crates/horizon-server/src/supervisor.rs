@@ -1,4 +1,4 @@
-//! `horizon-server run`: writes `server.properties` from `server.toml`, runs the engine with the console on
+//! `ferrite-server run`: writes `server.properties` from `server.toml`, runs the engine with the console on
 //! stdin, serves the control API, stops the game cleanly on Ctrl-C, SIGTERM or `stop`, and restarts it when
 //! it crashes (docs/server.md, sections 2 and 7). An update restarts the game on another release and goes
 //! back by itself when the new game doesn't come up.
@@ -169,7 +169,7 @@ enum Exit {
     /// Asked to stop, or the game ended by itself without an error (`stop` typed in its console, the EULA
     /// not agreed, the port taken): not restarted.
     Stopped,
-    /// Asked to restart (`horizon-server restart`).
+    /// Asked to restart (`ferrite-server restart`).
     Restart,
     Crashed(ExitStatus),
     /// Started on another release, the game wasn't up in time and was stopped.
@@ -217,7 +217,7 @@ pub fn run(dir: &Path) -> Result<(), String> {
                 &shared,
                 "INFO",
                 &format!(
-                    "Web panel on http://{address} (`horizon-server panel` prints a login link)"
+                    "Web panel on http://{address} (`ferrite-server panel` prints a login link)"
                 ),
             ),
             Err(e) => note(
@@ -438,7 +438,7 @@ fn switch(
     let Some(install) = shared.install.as_ref() else {
         shared.finish_update(
             false,
-            "Not updated: this horizon-server wasn't installed".into(),
+            "Not updated: this ferrite-server wasn't installed".into(),
         );
         return None;
     };
@@ -578,7 +578,7 @@ fn check_updates(shared: Arc<Shared>) {
                             &shared,
                             "INFO",
                             &format!(
-                                "Horizon {tag} is out (this server runs {current}): `horizon-server update` \
+                                "Horizon {tag} is out (this server runs {current}): `ferrite-server update` \
                                  installs it, and goes back by itself if it doesn't start"
                             ),
                         );
@@ -803,7 +803,7 @@ fn supervise(
             let command = line.trim().trim_start_matches('/');
             // `stop` on the supervisor's own stdin (`run` in a terminal, a hosting panel's console) ends the
             // supervisor too, as before: such hosts wait for the process to exit. A `stop` that reaches the game
-            // another way (in game, RCON, `horizon-server cmd`) leaves the supervisor and its API up.
+            // another way (in game, RCON, `ferrite-server cmd`) leaves the supervisor and its API up.
             if command == "stop" {
                 shared.shutdown.store(true, Ordering::SeqCst);
             }
@@ -1033,7 +1033,7 @@ mod tests {
         for (tag, code) in releases {
             let release = root.join("releases").join(tag);
             std::fs::create_dir_all(&release).unwrap();
-            std::fs::write(release.join("horizon-server"), "").unwrap();
+            std::fs::write(release.join("ferrite-server"), "").unwrap();
             let engine = release.join("horizon-engine");
             std::fs::write(&engine, format!("#!/bin/sh\nexit {code}\n")).unwrap();
             std::fs::set_permissions(&engine, std::fs::Permissions::from_mode(0o755)).unwrap();

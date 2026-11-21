@@ -1,4 +1,4 @@
-//! `horizon-server`: host a Horizon server (docs/server.md). It keeps the server's settings in `server.toml`,
+//! `ferrite-server`: host a Horizon server (docs/server.md). It keeps the server's settings in `server.toml`,
 //! runs the game headless as the engine, and manages the vanilla files around it.
 
 mod admin;
@@ -44,9 +44,9 @@ const VERSION: &str = match option_env!("HORIZON_VERSION") {
 };
 
 const HELP: &str = "\
-horizon-server: host a Horizon (Minecraft Java Edition 26.3) server
+ferrite-server: host a Ferrite (Minecraft Java Edition 26.3) server
 
-Usage: horizon-server [--dir DIR] <command>
+Usage: ferrite-server [--dir DIR] <command>
 
   init        Set up a server here: the EULA, the world, the port, who may join (asks, or takes flags:
               --eula --world NAME --seed SEED --port N --whitelist/--no-whitelist --player NAME... --op NAME
@@ -115,7 +115,7 @@ pub fn main() -> ExitCode {
     let mut dir = PathBuf::from(".");
     if let Some(i) = args.iter().position(|a| a == "--dir") {
         if i + 1 >= args.len() {
-            eprintln!("horizon-server: --dir needs a folder");
+            eprintln!("ferrite-server: --dir needs a folder");
             return ExitCode::from(2);
         }
         dir = PathBuf::from(args.remove(i + 1));
@@ -127,7 +127,7 @@ pub fn main() -> ExitCode {
             Ok(())
         }
         Some("version" | "-V" | "--version") => {
-            println!("horizon-server {VERSION}");
+            println!("ferrite-server {VERSION}");
             Ok(())
         }
         Some("init") => init_answers(&args[1..]).and_then(|a| init::run(&dir, a)),
@@ -164,7 +164,7 @@ pub fn main() -> ExitCode {
                     ),
                 }
             }
-            None => Err("restore needs a backup (`horizon-server backups` lists them)".into()),
+            None => Err("restore needs a backup (`ferrite-server backups` lists them)".into()),
         },
         Some("import-resources") => import_resources::command(&dir, &args[1..]),
         Some("import") => import(&dir, &args[1..]),
@@ -177,13 +177,13 @@ pub fn main() -> ExitCode {
             cli::moderate(&dir, command, &args[1..])
         }
         Some(other) => Err(format!(
-            "unknown command {other}; `horizon-server help` lists them"
+            "unknown command {other}; `ferrite-server help` lists them"
         )),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
-            eprintln!("horizon-server: {e}");
+            eprintln!("ferrite-server: {e}");
             ExitCode::FAILURE
         }
     }

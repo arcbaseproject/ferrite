@@ -1,28 +1,28 @@
 #!/bin/sh
-# Installs horizon-server (docs/server.md) on Linux or macOS: the current Horizon Nightly for this computer (the
+# Installs ferrite-server (docs/server.md) on Linux or macOS: the current Horizon Nightly for this computer (the
 # only build Horizon ships; GitHub's latest release while there is none), downloaded from GitHub Releases and
 # checked against the release's signed SHA256SUMS when OpenSSL 3 is installed (docs/release-flow.md, "Signed
 # checksums"), else against the SHA-256 GitHub publishes for it. On Linux that is the server build (horizon-server-linux-x86_64.tar.gz), which needs neither ALSA nor udev.
 #
-#   curl -fsSL https://raw.githubusercontent.com/horizon-rust/horizon/main/packaging/server/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/arcbaseproject/ferrite/main/packaging/server/install.sh | sh
 #   curl -fsSL .../install.sh | sh -s -- --version v0.5.0 --dir /opt/horizon --bin /usr/local/bin
 #   sh install.sh --archive horizon-server-linux-x86_64.tar.gz --version mybuild   (an archive you have)
 #
 # It needs curl, tar or unzip, and sha256sum or shasum (and OpenSSL 3 for the signature: macOS's LibreSSL is not
 # enough, and there the GitHub SHA-256 is all that is checked); it never asks for sudo (pick folders you can write).
-# Releases go to <dir>/releases/<version>, <dir>/current points at the one in use, and <bin>/horizon-server
+# Releases go to <dir>/releases/<version>, <dir>/current points at the one in use, and <bin>/ferrite-server
 # runs it. The game files you prepare from your own Minecraft stay in <dir>/game-files across updates.
 # Nothing of Mojang's is downloaded.
 set -eu
 
-REPO=horizon-rust/horizon
+REPO=arcbaseproject/ferrite
 VERSION=latest
 DIR="${XDG_DATA_HOME:-$HOME/.local/share}/horizon"
 BIN="$HOME/.local/bin"
 ARCHIVE=
-# Horizon's release public keys, base64, space-separated: copy of crates/horizon-release-sign/release-keys.txt
+# Ferrite's release public keys, base64, space-separated: copy of crates/horizon-release-sign/ferrite-release-keys.txt
 # (rotation adds a key there first; keep the two in step).
-RELEASE_KEYS="MU4oiIQcCxkZvbwSjjXs7SySCuM6ywRQ3nGaJYZG0gw="
+RELEASE_KEYS="W6nl28hJxkZAt7kOe2mUZe4fzJSTyGrq0oBAuHvh+8Y="
 
 die() { echo "horizon install: $*" >&2; exit 1; }
 
@@ -73,7 +73,7 @@ else
   TAG=$(printf '%s\n' "$JSON" | sed -n 's/^  "tag_name": "\([^"]*\)".*/\1/p' | head -n 1)
   [ -n "$TAG" ] || die "could not read the release's tag"
   RAWTAG=$TAG
-  # A Nightly installs under its date and commit, as `horizon-server update` names it:
+  # A Nightly installs under its date and commit, as `ferrite-server update` names it:
   # "Nightly 2026-10-28 · 0c02067" is nightly-2026-10-28-0c02067. Its signature is checked for exactly that
   # version, so the title must name it (as horizon_release_sign::build_title_version reads it, strictly).
   NAME=
@@ -135,10 +135,10 @@ else
           if openssl pkeyutl -verify -rawin -pubin -keyform DER -inkey "$TMP/key.der" -in "$TMP/message" -sigfile "$TMP/signature" >/dev/null 2>&1; then SIGNED=yes; fi
         done < "$TMP/SHA256SUMS.sig"
       done
-      [ -n "$SIGNED" ] || die "$TAG's SHA256SUMS signature doesn't match Horizon's release key: not installed. The download may have been tampered with; please report it on Discord or GitHub."
+      [ -n "$SIGNED" ] || die "$TAG's SHA256SUMS signature doesn't match Ferrite's release key: not installed. The download may have been tampered with; please report it on Discord or GitHub."
       EXPECT=$(awk -v asset="$ASSET" '$2 == asset || $2 == "*" asset { print $1; exit }' "$TMP/SHA256SUMS")
       [ -n "$EXPECT" ] || die "the signed SHA256SUMS doesn't list $ASSET: not installed"
-      echo "Release signature OK (Horizon release key)."
+      echo "Release signature OK (Ferrite release key)."
     fi
   fi
   [ -n "$EXPECT" ] || die "release $TAG publishes no SHA-256 for $ASSET"
@@ -154,8 +154,8 @@ case "$ASSET" in
   *.tar.gz) tar -xzf "$TMP/$ASSET" -C "$TMP/x" ;;
   *.zip) command -v unzip >/dev/null || die "unzip is needed"; unzip -q "$TMP/$ASSET" -d "$TMP/x" ;;
 esac
-SOURCE=$(dirname "$(find "$TMP/x" -name horizon-server -type f | head -n 1)")
-[ -x "$SOURCE/horizon-server" ] || die "$ASSET holds no horizon-server (a release from before it existed?)"
+SOURCE=$(dirname "$(find "$TMP/x" -name ferrite-server -type f | head -n 1)")
+[ -x "$SOURCE/ferrite-server" ] || die "$ASSET holds no ferrite-server (a release from before it existed?)"
 
 RELEASE="$DIR/releases/$TAG"
 mkdir -p "$DIR/releases" "$DIR/game-files/horizon-client" "$BIN"
@@ -166,12 +166,12 @@ mkdir -p "$RELEASE/.local"
 ln -sfn "$DIR/game-files/horizon-client" "$RELEASE/.local/horizon-client"
 ln -sfn "$RELEASE" "$DIR/current"
 # Small launchers rather than links: the programs find their release folder from where they run.
-for tool in horizon-server horizon-prepare; do
+for tool in ferrite-server horizon-prepare; do
   printf '#!/bin/sh\nexec "%s/current/%s" "$@"\n' "$DIR" "$tool" > "$BIN/$tool"
   chmod +x "$BIN/$tool"
 done
 
-echo "Installed Horizon $TAG in $RELEASE; horizon-server and horizon-prepare are in $BIN."
+echo "Installed Horizon $TAG in $RELEASE; ferrite-server and horizon-prepare are in $BIN."
 # The full game (releases before the server build) links ALSA and udev; minimal Linux images often lack them.
 if [ "$(uname -s)" = Linux ] && [ ! -e "$RELEASE/horizon-engine" ] && command -v ldd >/dev/null; then
   MISSING=$(ldd "$RELEASE/horizon-client" 2>/dev/null | awk '/not found/ { printf "%s ", $1 }')
@@ -193,4 +193,4 @@ if [ -z "$(ls -A "$DIR/game-files/horizon-client" 2>/dev/null)" ]; then
   echo "by the official launcher; see docs/server.md):"
   echo "  horizon-prepare --prepare --server-jar /path/to/server.jar"
 fi
-echo "Then set up a server: mkdir my-server && cd my-server && horizon-server init"
+echo "Then set up a server: mkdir my-server && cd my-server && ferrite-server init"

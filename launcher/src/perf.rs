@@ -413,7 +413,7 @@ pub fn benchmark(repeats: usize) -> Result<PathBuf, String> {
 
 fn app() -> App {
     App {
-        name: "horizon-launcher".into(),
+        name: "ferrite-launcher".into(),
         version: crate::backend::VERSION.into(),
         ..App::default()
     }

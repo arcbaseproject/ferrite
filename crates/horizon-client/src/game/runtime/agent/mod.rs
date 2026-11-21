@@ -476,7 +476,6 @@ impl Game<'_> {
             Screen::Mod => "mod",
             Screen::HudEditor => "hud-editor",
             Screen::Studio => "studio",
-            Screen::EmoteWheel => "emote-wheel",
         }
     }
     pub(super) fn inventory_counts(&self) -> BTreeMap<String, i64> {

@@ -390,12 +390,12 @@ pub fn prometheus(shared: &Shared) -> Response {
     );
     gauge(
         "supervisor_uptime_seconds",
-        "Seconds since horizon-server started",
+        "Seconds since ferrite-server started",
         &[("", Some(shared.started.elapsed().as_secs() as f64))],
     );
     gauge(
         "crashes",
-        "Game crashes since horizon-server started",
+        "Game crashes since ferrite-server started",
         &[("", Some(f64::from(crashes)))],
     );
     gauge(

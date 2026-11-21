@@ -1,9 +1,8 @@
-# Horizon's mark and icons
+# Ferrite's mark and icons
 
-**The mark.** An H whose crossbar is the horizon: the line runs edge to edge in Horizon's violet,
-the stems above it in full strength and their reflection below at a third. It is drawn on whole
-units of a 16-unit grid, so it is sharp at 16 px and holds at 1024 px. `docs/design-system.md`
-places it in the design system; `candidates/` keeps the two alternatives that were shown with it.
+**The mark.** An F whose middle arm is molten iron orange (`#ff6b1f`), the rest of the letter in
+full strength. It is drawn on whole units of a 16-unit grid, so it is sharp at 16 px and holds at
+1024 px. `candidates/` keeps Horizon's earlier alternatives, for reference only.
 
 ## Masters (edit these)
 

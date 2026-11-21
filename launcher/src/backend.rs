@@ -454,12 +454,20 @@ pub const LAUNCHER_APPIMAGE_ASSET: Option<&str> = Some("horizon-launcher-linux-x
 pub const LAUNCHER_APPIMAGE_ASSET: Option<&str> = None;
 
 const LAUNCHER_BINARY: &str = if cfg!(windows) {
-    "horizon-launcher.exe"
+    "ferrite-launcher.exe"
 } else {
-    "horizon-launcher"
+    "ferrite-launcher"
 };
 
 pub(crate) const CLIENT: &str = if cfg!(windows) {
+    "ferrite.exe"
+} else {
+    "ferrite"
+};
+
+/// The game as cargo builds it (`horizon-game`'s bin), before packaging names it [`CLIENT`]: developer
+/// builds and the SDK's prebuilt runtime.
+pub(crate) const BUILT_CLIENT: &str = if cfg!(windows) {
     "horizon-client.exe"
 } else {
     "horizon-client"
@@ -1226,7 +1234,12 @@ pub fn install(release: &Release, progress: impl Fn(f32)) -> Result<(), String> 
             )?
         }
         None if is_game_tag(tag) => signed_digest(tag, asset)?,
-        None => return Err(format!("{tag} is not a Horizon release.")),
+        None => {
+            return Err(crate::i18n::trf(
+                "{tag} is not a Horizon release.",
+                &[("tag", tag)],
+            ))
+        }
     };
     install_as(
         release,
@@ -6172,8 +6185,8 @@ pub fn {f}("
         fs::write(theirs.join("download.zip"), b"their download").unwrap();
         fs::write(mine.join("download.zip"), b"mine").unwrap();
 
-        remove_stage(&work, &work.join("unpacked").join("horizon-launcher"));
-        remove_stage(&work, &mine.join("..").join("horizon-launcher"));
+        remove_stage(&work, &work.join("unpacked").join("ferrite-launcher"));
+        remove_stage(&work, &mine.join("..").join("ferrite-launcher"));
         remove_stage(&work, &work);
         assert!(mine.exists() && theirs.exists());
 
@@ -7351,7 +7364,7 @@ pub fn {f}("
             std::env::temp_dir().join(format!("horizon-launcher-replace-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
-        let exe = dir.join("horizon-launcher");
+        let exe = dir.join("ferrite-launcher");
         fs::write(&exe, "old").unwrap();
         // Another update swaps the file under the running launcher.
         fs::write(dir.join("other"), "other update").unwrap();
@@ -7379,7 +7392,7 @@ pub fn {f}("
             .map(|e| e.file_name().to_string_lossy().into_owned())
             .collect();
         names.sort();
-        assert_eq!(names, ["horizon-launcher", "new"]);
+        assert_eq!(names, ["ferrite-launcher", "new"]);
         let _ = fs::remove_dir_all(&dir);
     }
 

@@ -7774,6 +7774,8 @@ mod tests {
         let vanilla_repeats: BTreeMap<&str, &[&str]> = [
             ("MenuBlur", &["Accessibility", "Graphics"][..]),
             ("FovEffects", &["Accessibility", "Graphics"][..]),
+            // Ferrite: also on the graphics screen, where players look for it.
+            ("ViewBobbing", &["Accessibility", "Graphics"][..]),
             ("ShowSubtitles", &["Accessibility", "Sound"][..]),
             ("Narrator", &["Accessibility", "Chat"][..]),
             ("ChatOpacity", &["Accessibility", "Chat"][..]),

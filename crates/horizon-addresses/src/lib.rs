@@ -51,19 +51,9 @@ pub const MODPACK_DOWNLOAD_HOSTS: &[&str] = &[
     "maven.neoforged.net",
 ];
 
-/// The cosmetics service: cosmetics, emotes, "Show me as a Horizon player"
-/// (`HORIZON_COSMETICS_API` overrides it).
-pub const COSMETICS_API: &str = "https://cosmetics.playhorizon.dev";
-
 /// The telemetry ingest server (`crates/horizon-telemetry-server`): opt-in telemetry, the
 /// "I'm playing" ping, benchmark uploads (`HORIZON_TELEMETRY_URL` overrides it).
 pub const TELEMETRY: &str = "https://telemetry.playhorizon.dev";
-
-/// The performance viewer page a saved capture opens in (`HORIZON_PERF_VIEWER` overrides it).
-pub const PERF_VIEWER: &str = "https://playhorizon.dev/perf";
-
-/// The capture upload API behind Share (`HORIZON_PERF_CAPTURES` overrides it).
-pub const PERF_CAPTURES: &str = "https://playhorizon.dev/api/perf/captures";
 
 /// Public STUN servers for Play with Friends' NAT discovery: two independent operators, so one
 /// outage doesn't break discovery (`HORIZON_STUN_SERVERS` overrides them).
@@ -75,12 +65,6 @@ pub const FRIENDS_HELP: &str =
 
 /// Horizon community invite used by launcher defaults.
 pub const COMMUNITY_DISCORD: &str = "https://discord.gg/playhorizon";
-
-/// The sponsoring hosting provider’s referral page.
-pub const HOSTING_PARTNER: &str = "https://my.sculkhosting.com/ref/horizon";
-
-/// The official cosmetics shop.
-pub const SHOP: &str = "https://playhorizon.dev/shop";
 
 /// The GitHub profile of who made the launcher's look, credited in Settings' About (its picture is
 /// `<this>.png`).

@@ -104,7 +104,8 @@ pub fn install(checkout: &Path, program: &Path, trusted: bool) -> Result<String,
     }
     let checkout = checkout.canonicalize().map_err(|e| e.to_string())?;
     let program = program.canonicalize().map_err(|e| e.to_string())?;
-    if program.file_name().and_then(|n| n.to_str()) != Some(backend::CLIENT)
+    let name = program.file_name().and_then(|n| n.to_str());
+    if !(name == Some(backend::CLIENT) || name == Some(backend::BUILT_CLIENT))
         || !crate::build_import::holds_game(&program)
     {
         return Err(tr("Choose a real horizon-client executable built for this computer.").into());

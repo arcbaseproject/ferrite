@@ -78,7 +78,7 @@ pub const MAPPINGS: &[(&str, &str, &str)] = &[
 /// `horizon-extras.txt` (`emoteKey`), never in `options.txt`, which stays exactly vanilla's
 /// (`MAPPINGS` is what the options parity harness compares with the pinned client).
 pub const HORIZON_MAPPINGS: &[(&str, &str, &str)] = &[
-    // The emote wheel (docs/cosmetics.md), on a key vanilla leaves free.
+    // The emote wheel, on a key vanilla leaves free.
     ("key.emote", "key.keyboard.b", "multiplayer"),
 ];
 /// Every mapping the game binds: vanilla's in `Options.keyMappings` order, then Horizon's.

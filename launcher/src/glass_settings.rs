@@ -26,15 +26,13 @@ const SECTIONS: [(&str, &str); 8] = [
 
 /// About's credits: the line, the name in it, the link and its button, the GitHub profile whose
 /// picture shows.
-const CREDITS: [(&str, &str, &str, &str, &str); 1] = [
-    (
-        "Ferrite by {name}",
-        "arcbaseproject",
-        horizon_addresses::REPOSITORY,
-        "Open on GitHub",
-        horizon_addresses::MAKER,
-    ),
-];
+const CREDITS: [(&str, &str, &str, &str, &str); 1] = [(
+    "Ferrite by {name}",
+    "arcbaseproject",
+    horizon_addresses::REPOSITORY,
+    "Open on GitHub",
+    horizon_addresses::MAKER,
+)];
 
 /// What the search finds in each section, in [`SECTIONS`]' order: its rows' names and words a
 /// player may look for them by. English; a query matches them and their translation.

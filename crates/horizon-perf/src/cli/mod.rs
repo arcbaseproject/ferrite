@@ -3,8 +3,6 @@ mod diff;
 mod export;
 pub mod files;
 mod query;
-#[cfg(not(target_arch = "wasm32"))]
-mod sharing;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -55,9 +53,6 @@ usage:
   horizon-perf follow  [FILE|latest] [--every S] [--json] [--dir DIR]
   horizon-perf attach  FILE --name NAME --body JSONFILE   adds the JSON file to a finished capture as an attachment
   horizon-perf export  [FILE|latest] --pprof|--folded|--perfetto [--out PATH] [--side client|server] [--thread T] [--select KIND] [--slow] [--dir DIR]
-  horizon-perf upload  [FILE|latest] [--dir DIR]         temporary one-hour upload; prints its link and delete token as JSON
-  horizon-perf share   [FILE|latest] [--dir DIR]         upload and share for 30 days; prints its link and delete token as JSON
-  horizon-perf open    [FILE|latest] [--dir DIR]         serves the file once on 127.0.0.1 and opens the viewer on it; waits for the fetch
   horizon-perf mcp                                     MCP server on stdio: perf_summary, perf_query, perf_diff, perf_list, perf_follow
 
 OPs: {ops}.
@@ -203,10 +198,6 @@ pub fn run(args: &[String], env: &Env, out: &mut dyn Write) -> Result<(), CliErr
     };
     match command.as_str() {
         "summary" => summary(rest, env, out),
-        #[cfg(not(target_arch = "wasm32"))]
-        "upload" | "share" => sharing::run(rest, env, out, command == "share"),
-        #[cfg(not(target_arch = "wasm32"))]
-        "open" => sharing::open(rest, env, out),
         "list" => list(rest, env, out),
         "follow" => follow(rest, env, out),
         "query" => query::query(rest, env, out),

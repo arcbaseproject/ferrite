@@ -11,7 +11,7 @@ game_wait_ready, game_state, game_ui and game_screenshot play it until game_quit
 `horizon-launcher no-ai on`: `horizon-launcher mcp` refuses to start, and a session already running
 refuses its next call.
 
-    python3 tools/launcher_mcp_e2e.py --bin-dir target/fast --launcher launcher/target/debug/horizon-launcher
+    python3 tools/launcher_mcp_e2e.py --bin-dir target/fast --launcher launcher/target/debug/ferrite-launcher
 
 On macOS the game renders offscreen (it runs in a locked session or over SSH); on Linux it needs
 a display (vscreen on the desktop). Games started here have no audio.
@@ -72,7 +72,7 @@ class Mcp:
 def scenario(m, out):
     init = m.rpc('initialize', {'protocolVersion': '2025-06-18', 'capabilities': {},
                                 'clientInfo': {'name': 'launcher_mcp_e2e', 'version': '1'}})
-    assert init['serverInfo']['name'] == 'horizon-launcher', init
+    assert init['serverInfo']['name'] == 'ferrite-launcher', init
     tools = {t['name'] for t in m.rpc('tools/list', {})['tools']}
     for name in ['play', 'server', 'versions', 'settings', 'mods_search', 'modpack_list', 'servers_list',
                  'account_list', 'game_args', 'game_state', 'game_ui', 'game_click',

@@ -345,7 +345,7 @@ mod tests {
         let _ = fs::remove_dir_all(&root);
         let (data, bin) = (root.join("data"), root.join("bin"));
         fs::create_dir_all(&bin).unwrap();
-        let installed = bin.join("horizon-launcher");
+        let installed = bin.join("ferrite-launcher");
         fs::write(&installed, b"").unwrap();
         let entry = data.join("applications").join(LAUNCHER_ENTRY);
         let path = Some(bin.as_os_str());

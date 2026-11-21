@@ -36,9 +36,9 @@ grep -q -- '--resources' "$HORIZON_HOME/client-help"
 "$bin/horizon-ctl" --help > /dev/null
 "$bin/horizon-prepare" --help > "$HORIZON_HOME/prepare-help"
 grep -q -- '--minecraft-dir' "$HORIZON_HOME/prepare-help"
-for binary in horizon-prepare horizon-server; do
-  test "$("$bin/$binary" --version)" = "$binary $HORIZON_VERSION"
-done
+test "$("$bin/horizon-prepare" --version)" = "horizon-prepare $HORIZON_VERSION"
+# horizon-server ships as ferrite-server and says so.
+test "$("$bin/horizon-server" --version)" = "ferrite-server $HORIZON_VERSION"
 
 cargo run --locked --target "$target" -p xtask -- package \
   "$bin/horizon-client" dist/horizon-linux-musl-x86_64

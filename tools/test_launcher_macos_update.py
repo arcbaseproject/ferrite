@@ -88,7 +88,7 @@ fn main() {
                     _ => Err("diagnostic key absence not verified".into()),
                 }
             },
-            "exec" => Err(Command::new(app.join("Contents/MacOS/horizon-launcher"))
+            "exec" => Err(Command::new(app.join("Contents/MacOS/ferrite-launcher"))
                 .arg(&app).exec().to_string()),
             _ => Err("unknown probe command".into()),
         })();
@@ -110,7 +110,7 @@ def pins(text):
 
 class Peer:
     def __init__(self, app, env):
-        self.proc = subprocess.Popen([str(app / 'Contents/MacOS/horizon-launcher'), str(app)],
+        self.proc = subprocess.Popen([str(app / 'Contents/MacOS/ferrite-launcher'), str(app)],
                                      env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
 
     def line(self):
@@ -146,10 +146,10 @@ def keychain_scenario(work, binary, env):
     def bundle(path, version):
         (path / 'Contents/MacOS').mkdir(parents=True)
         (path / 'Contents/Resources').mkdir()
-        shutil.copy2(binary, path / 'Contents/MacOS/horizon-launcher')
+        shutil.copy2(binary, path / 'Contents/MacOS/ferrite-launcher')
         (path / 'Contents/Resources/version').write_text(version)
         (path / 'Contents/Info.plist').write_text('''<?xml version="1.0"?><plist version="1.0"><dict>
-<key>CFBundleExecutable</key><string>horizon-launcher</string>
+<key>CFBundleExecutable</key><string>ferrite-launcher</string>
 <key>CFBundleIdentifier</key><string>dev.playhorizon.launcher.diagnostic</string>
 <key>CFBundlePackageType</key><string>APPL</string></dict></plist>''')
         run('/usr/bin/codesign', '--force', '--sign', '-', path, env=env)

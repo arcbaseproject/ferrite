@@ -445,7 +445,7 @@ impl Shared {
         timeout: Duration,
     ) -> Result<(), String> {
         let install = self.install.clone().ok_or(
-            "this horizon-server wasn't installed by install.sh or install.ps1: no updates",
+            "this ferrite-server wasn't installed by install.sh or install.ps1: no updates",
         )?;
         {
             let mut update = self.update.lock().unwrap();
@@ -458,7 +458,7 @@ impl Shared {
             if !install.release(&tag).is_dir() || tag.contains(['/', '\\']) {
                 self.update.lock().unwrap().busy = None;
                 return Err(format!(
-                    "{tag} isn't installed (`horizon-server update` downloads it)"
+                    "{tag} isn't installed (`ferrite-server update` downloads it)"
                 ));
             }
             self.switch_to(tag, timeout);

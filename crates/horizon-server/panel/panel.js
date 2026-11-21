@@ -218,7 +218,7 @@ function renderStatus(status) {
   phase.textContent = status.phase;
   phase.className = `state ${status.phase}`;
   $("uptime").textContent = status.engine_uptime_seconds != null ? `· up ${duration(status.engine_uptime_seconds)}` : "";
-  $("version").textContent = `horizon-server ${status.version}`;
+  $("version").textContent = `ferrite-server ${status.version}`;
   const stopped = status.phase === "stopped";
   $("start").hidden = !stopped;
   $("restart").hidden = stopped;
@@ -229,7 +229,7 @@ function renderStatus(status) {
   renderFacts();
 }
 
-// Updates (horizon-server update): a newer release, one under way, or how the last one ended.
+// Updates (ferrite-server update): a newer release, one under way, or how the last one ended.
 function renderUpdate(update) {
   const offer = update && !update.busy && update.available;
   let text = "";
@@ -613,7 +613,7 @@ function setUp() {
     }
   });
   $("stop").addEventListener("click", async () => {
-    if (await ask({ title: "Stop the server?", text: "The game saves and stops, and this panel goes with it. Start it again on the server with horizon-server start.", ok: "Stop", danger: true })) {
+    if (await ask({ title: "Stop the server?", text: "The game saves and stops, and this panel goes with it. Start it again on the server with ferrite-server start.", ok: "Stop", danger: true })) {
       await act("POST", "/api/v1/stop", undefined, "Stopping…");
     }
   });

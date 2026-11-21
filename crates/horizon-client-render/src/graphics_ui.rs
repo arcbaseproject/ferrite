@@ -258,6 +258,7 @@ pub fn rows() -> Vec<(Page, Vec<(&'static str, Vec<Setting>)>)> {
                     "Interface",
                     vec![
                         v(Opt::MenuBlur, Low, "Blurs the world behind menus."),
+                        v(Opt::ViewBobbing, None, "Sways the view while walking."),
                         v(Opt::AttackIndicator, None, "Shows attack cooldown."),
                         v(Opt::Autosave, None, "Shows when the world saves."),
                         v(
@@ -1282,6 +1283,7 @@ impl Item {
                 g.translucent_batching && crate::graphics::translucent_batching_offered()
             }
             Item::Vanilla(Opt::Vsync) => s.vsync,
+            Item::Vanilla(Opt::ViewBobbing) => s.view_bobbing,
             Item::Extra(e) => return e.switch(&s.extras),
             Item::Vanilla(Opt::Fullscreen) => s.fullscreen,
             Item::Vanilla(Opt::ExclusiveFullscreen) => s.file.bool("exclusiveFullscreen"),
@@ -1372,6 +1374,7 @@ impl Item {
                         | Opt::Gamma
                         | Opt::InactivityFps
                         | Opt::MenuBlur
+                        | Opt::ViewBobbing
                         | Opt::ChunkFade
                         | Opt::Vignette
                         | Opt::Autosave
@@ -1468,6 +1471,7 @@ fn read(s: &Settings) -> impl std::fmt::Debug + '_ {
         s.max_fps,
         &s.inactivity_fps_limit,
         s.menu_blur,
+        s.view_bobbing,
         s.chunk_fade,
         s.prioritize_chunk_updates,
     );
@@ -1600,6 +1604,7 @@ impl Screen for GraphicsScreen {
         s.max_fps = b.max_fps;
         s.inactivity_fps_limit = b.inactivity_fps_limit.clone();
         s.menu_blur = b.menu_blur;
+        s.view_bobbing = b.view_bobbing;
         s.extras.fullbright = b.extras.fullbright;
         s.extras.dynamic_lights = b.extras.dynamic_lights;
         s.extras.hide_block_particles = b.extras.hide_block_particles;

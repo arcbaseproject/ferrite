@@ -117,22 +117,22 @@ jobs:
           - name: linux
             os: ubuntu-22.04
             asset: horizon-launcher-linux-x86_64.tar.gz
-            binary: horizon-launcher
+            binary: ferrite-launcher
           - name: macos
             mac: true
             asset: horizon-launcher-macos-arm64.zip
-            binary: horizon-launcher
+            binary: ferrite-launcher
             mac_arch: arm64
           - name: macos-x64
             mac: true
             target: x86_64-apple-darwin
             asset: horizon-launcher-macos-x64.zip
-            binary: horizon-launcher
+            binary: ferrite-launcher
             mac_arch: x64
           - name: windows
             os: windows-latest
             asset: horizon-launcher-windows-x64.zip
-            binary: horizon-launcher.exe
+            binary: ferrite-launcher.exe
             pe_arch: x64
             setup_asset: horizon-launcher-setup.exe
             # The C runtime linked in: without it the launcher asks for VCRUNTIME140.dll,
@@ -142,7 +142,7 @@ jobs:
             os: windows-11-vs2026-arm
             target: aarch64-pc-windows-msvc
             asset: horizon-launcher-windows-arm64.zip
-            binary: horizon-launcher.exe
+            binary: ferrite-launcher.exe
             pe_arch: arm64
             setup_asset: horizon-launcher-setup-arm64.exe
             # The C runtime linked in, so the standalone ARM64 launcher needs no redistributable.
@@ -237,7 +237,7 @@ jobs:
           out=$("$BIN/${{ matrix.binary }}" --version)
           echo "$out"
           expected="${HORIZON_LAUNCHER_VERSION:-$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)}"
-          [[ "$out" == "horizon-launcher $expected" ]] || { echo "::error::expected horizon-launcher $expected"; exit 1; }
+          [[ "$out" == "ferrite-launcher $expected" ]] || { echo "::error::expected ferrite-launcher $expected"; exit 1; }
       - name: Only system libraries
         run: |
           file="$BIN/${{ matrix.binary }}"
@@ -281,7 +281,7 @@ jobs:
           retry "$launcher" install latest
           "$launcher" versions --installed
           # `install latest` is the Nightly since #3342 (versions/nightly-<date>-<commit>), a vX.Y.Z before.
-          clients=("$HORIZON_LAUNCHER_HOME"/versions/*/horizon-client*)
+          clients=("$HORIZON_LAUNCHER_HOME"/versions/*/ferrite*)
           client="${clients[0]}"
           echo "installed client: $client"
           [[ -f "$client" ]] || { echo "::error::no game installed under versions/"; exit 1; }
@@ -307,7 +307,7 @@ jobs:
             setup="$RUNNER_TEMP/setup-smoke"
             cp "$launcher" "$RUNNER_TEMP/horizon-launcher-setup.exe"
             "$RUNNER_TEMP/horizon-launcher-setup.exe" setup --quiet --dir "$setup"
-            installed="$setup/Horizon Launcher/horizon-launcher.exe"
+            installed="$setup/Ferrite Launcher/ferrite-launcher.exe"
             [[ -f "$installed" ]] || { echo "::error::the setup copied no launcher"; exit 1; }
             "$installed" uninstall --quiet
             [[ ! -f "$installed" ]] || { echo "::error::uninstall left the launcher"; exit 1; }

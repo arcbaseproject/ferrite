@@ -22,8 +22,8 @@ Downloaded this archive directly?
   (Windows: horizon-prepare.exe.) The 26.3 server jar is the downloads.server.url
   in your launcher's versions/26.3/26.3.json. Add --minecraft-dir PATH to both if
   your launcher keeps the game elsewhere. Then run
-  ./horizon-client (horizon-client.exe on Windows; on macOS the first time:
-  right-click > Open). horizon-client --help lists the options.
+  ./ferrite (ferrite.exe on Windows; on macOS the first time:
+  right-click > Open). ferrite --help lists the options.
 
 Controls: mouse look, WASD move, Space jump, Left Shift sneak, Left Ctrl
 sprint, left click break, right click place/use, 1-9 or scroll for the hotbar,
@@ -39,13 +39,13 @@ Scripts and AI agents
   beside it or the version the launcher installed.
 
 Running a server
-  horizon-server, in this folder, hosts a server with this game as its engine,
+  ferrite-server, in this folder, hosts a server with this game as its engine,
   using the resources prepared above:
-    ./horizon-server --dir my-server init     the EULA, world, seed, port, who may join
-    ./horizon-server --dir my-server start    in the background; also stop, restart
-    ./horizon-server --dir my-server status   TPS, MSPT, players, RAM and CPU
-    ./horizon-server --dir my-server cmd list
-    ./horizon-server --dir my-server backup   also backups, restore
-    ./horizon-server --dir my-server service install   start it at boot or login
-  Its settings are in my-server/server.toml. ./horizon-server help lists every
+    ./ferrite-server --dir my-server init     the EULA, world, seed, port, who may join
+    ./ferrite-server --dir my-server start    in the background; also stop, restart
+    ./ferrite-server --dir my-server status   TPS, MSPT, players, RAM and CPU
+    ./ferrite-server --dir my-server cmd list
+    ./ferrite-server --dir my-server backup   also backups, restore
+    ./ferrite-server --dir my-server service install   start it at boot or login
+  Its settings are in my-server/server.toml. ./ferrite-server help lists every
   command; docs/server.md in the repository has the details.

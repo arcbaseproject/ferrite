@@ -1800,7 +1800,7 @@ mod tests {
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );
-        let executable = target_dir.join("fast").join(crate::backend::CLIENT);
+        let executable = target_dir.join("fast").join(crate::backend::BUILT_CLIENT);
         assert_eq!(
             crate::native_mods::pe_machine(&executable).unwrap(),
             WINDOWS_ARM64_MACHINE,

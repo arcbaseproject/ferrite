@@ -13,7 +13,7 @@ impl Home {
         path
     }
     fn run(&self, args: &[&str]) -> std::process::Output {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_horizon-launcher"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_ferrite-launcher"));
         command.args(args);
         command
             .current_dir(self.0.path())

@@ -134,7 +134,7 @@ fn a_windows_shortcut_is_a_shell_link_to_the_launcher() {
 #[test]
 fn the_shell_written_link_keeps_the_instance_it_plays() {
     let root = scratch("plays");
-    let exe = root.join("Horizon Launcher").join("horizon-launcher.exe");
+    let exe = root.join("Horizon Launcher").join("ferrite-launcher.exe");
     fs::create_dir_all(exe.parent().unwrap()).unwrap();
     fs::write(&exe, b"x").unwrap();
     let link = root.join("Hardcore (Horizon).lnk");

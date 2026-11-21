@@ -1,6 +1,6 @@
-//! `horizon-server service install|uninstall|print`: run the server at boot or login under the system's own
+//! `ferrite-server service install|uninstall|print`: run the server at boot or login under the system's own
 //! service manager (docs/server.md, section 3): a systemd unit on Linux, a launchd agent on macOS, a task at
-//! logon on Windows. The service runs `horizon-server run`, which restarts the game if it crashes; the
+//! logon on Windows. The service runs `ferrite-server run`, which restarts the game if it crashes; the
 //! service manager restarts the supervisor itself.
 
 use horizon_server_launch::config;
@@ -32,7 +32,7 @@ pub fn name(dir: &Path) -> String {
     format!("horizon-server-{clean}")
 }
 
-/// The program the service runs: the `horizon-server` on the PATH (the installer's launcher, which keeps
+/// The program the service runs: the `ferrite-server` on the PATH (the installer's launcher, which keeps
 /// running the current version after an update), else this program, through the installer's `current`
 /// link when it runs from an installed release.
 fn program() -> Result<PathBuf, String> {
@@ -40,7 +40,7 @@ fn program() -> Result<PathBuf, String> {
         .map(|p| std::env::split_paths(&p).collect::<Vec<_>>())
         .unwrap_or_default()
         .into_iter()
-        .map(|d| d.join(format!("horizon-server{}", std::env::consts::EXE_SUFFIX)))
+        .map(|d| d.join(format!("ferrite-server{}", std::env::consts::EXE_SUFFIX)))
         .find(|p| p.is_file());
     match on_path {
         Some(path) => Ok(path),
@@ -50,7 +50,7 @@ fn program() -> Result<PathBuf, String> {
     }
 }
 
-/// `<dir>/releases/<tag>/horizon-server` as `<dir>/current/horizon-server` while `current` points at that
+/// `<dir>/releases/<tag>/ferrite-server` as `<dir>/current/ferrite-server` while `current` points at that
 /// release (install.sh and install.ps1's layout), so an update applies at the next restart. Linux reports
 /// the running program with links resolved, so the release's own path is what this program sees there.
 fn through_current(exe: &Path) -> PathBuf {
@@ -602,12 +602,12 @@ mod tests {
             std::env::temp_dir().join(format!("horizon-service-current-{}", std::process::id()));
         let release = root.join("releases/v1");
         std::fs::create_dir_all(&release).unwrap();
-        let exe = release.join("horizon-server");
+        let exe = release.join("ferrite-server");
         std::fs::write(&exe, "").unwrap();
         // Not the release in use (or no installer layout): this program as it is.
         assert_eq!(through_current(&exe), exe);
         std::os::unix::fs::symlink(&release, root.join("current")).unwrap();
-        assert_eq!(through_current(&exe), root.join("current/horizon-server"));
+        assert_eq!(through_current(&exe), root.join("current/ferrite-server"));
         let other = root.join("bin/horizon-server");
         assert_eq!(through_current(&other), other);
         std::fs::remove_dir_all(&root).unwrap();

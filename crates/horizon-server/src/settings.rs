@@ -1,4 +1,4 @@
-//! `horizon-server config`: read server.toml's settings, and change them the way the server checks them
+//! `ferrite-server config`: read server.toml's settings, and change them the way the server checks them
 //! (docs/server.md, section 4). A running server takes what vanilla can change live through its console
 //! (difficulty, the default game mode, the whitelist) and through its management settings (the message of the
 //! day, the player limit) at once; the rest applies at the next start.
@@ -83,7 +83,7 @@ impl Outcome {
         }
         if !self.restart.is_empty() {
             out += &format!(
-                "Saved; restart the server to apply: {} (`horizon-server restart`)\n",
+                "Saved; restart the server to apply: {} (`ferrite-server restart`)\n",
                 self.restart.join(", ")
             );
         }
@@ -111,7 +111,7 @@ pub fn parse_change(
             .get(section)
             .and_then(|s| s.get(field))
             .ok_or_else(|| {
-                format!("{key} is not a setting (`horizon-server config` lists them)")
+                format!("{key} is not a setting (`ferrite-server config` lists them)")
             })?;
         match like {
             toml::Value::Boolean(_) => toml::Value::Boolean(match text {
@@ -607,7 +607,7 @@ mod tests {
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
-    /// `horizon-server help` says which settings `config set` gives a running server at once; every setting it
+    /// `ferrite-server help` says which settings `config set` gives a running server at once; every setting it
     /// names has a way to apply it (`live_line`), and `view_distance`, which has none, is not named.
     #[test]
     fn the_help_names_what_config_set_applies_at_once() {

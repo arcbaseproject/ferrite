@@ -283,11 +283,14 @@ jobs:
           "$bin/horizon-ctl${{ matrix.exe }}" --help > /dev/null
           "$bin/horizon-prepare${{ matrix.exe }}" --help | grep -q -- '--minecraft-dir'
           # The version is the release's.
-          for binary in horizon-prepare horizon-server; do
+          for binary in horizon-prepare; do
             out=$("$bin/$binary${{ matrix.exe }}" --version | tr -d '\r')
             echo "$out"
             [[ "$out" == "$binary $HORIZON_VERSION" ]] || { echo "::error::expected $binary $HORIZON_VERSION"; exit 1; }
           done
+          # horizon-server ships as ferrite-server and says so.
+          out=$("$bin/horizon-server${{ matrix.exe }}" --version | tr -d '\r')
+          [[ "$out" == "ferrite-server $HORIZON_VERSION" ]] || { echo "::error::expected ferrite-server $HORIZON_VERSION"; exit 1; }
       - name: Tools from the runner
         if: runner.environment == 'self-hosted'
         env:
@@ -367,7 +370,7 @@ jobs:
         # A zip of programs can't be stapled: Gatekeeper asks Apple the first time each one runs.
         if: runner.os == 'macOS' && vars.MACOS_SIGN_IDENTITY != '' && inputs.developer_id
         run: |
-          for binary in horizon-client horizon-ctl horizon-prepare horizon-server; do
+          for binary in ferrite horizon-ctl horizon-prepare ferrite-server; do
             codesign --verify --strict "dist/${{ matrix.dir }}/$binary"
           done
           packaging/macos/notarize.sh "dist/${{ matrix.asset }}"
@@ -385,9 +388,9 @@ jobs:
           cargo build --release --locked -p horizon-game --no-default-features --bin horizon-client
           cargo run --locked -p xtask -- package-server target/release/horizon-client "dist/${{ matrix.server_dir }}"
           folder="dist/${{ matrix.server_dir }}"
-          python3 tools/check_imports.py --server "$folder/horizon-engine" "$folder/horizon-server" "$folder/horizon-prepare"
+          python3 tools/check_imports.py --server "$folder/horizon-engine" "$folder/ferrite-server" "$folder/horizon-prepare"
           "$folder/horizon-engine" --help | grep -q -- '--resources'
-          [[ "$("$folder/horizon-server" --version)" == "horizon-server $HORIZON_VERSION" ]]
+          [[ "$("$folder/ferrite-server" --version)" == "ferrite-server $HORIZON_VERSION" ]]
           cd dist
           rm -f "${{ matrix.server_asset }}"
           tar czf "${{ matrix.server_asset }}" "${{ matrix.server_dir }}"

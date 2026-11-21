@@ -5,6 +5,11 @@ edition = "2021"
 license = "LGPL-3.0-or-later"
 description = "Downloads, prepares and starts Horizon builds"
 
+# Ferrite ships the launcher as `ferrite-launcher`; the package keeps upstream's name for merges.
+[[bin]]
+name = "ferrite-launcher"
+path = "src/main.rs"
+
 [workspace]
 
 [dependencies]

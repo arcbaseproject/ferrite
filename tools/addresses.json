@@ -108,9 +108,6 @@
     "launcher/src/tailscale.rs login.tailscale.com",
     "launcher/src/tailscale.rs tailscale.com",
     "crates/horizon-mod-package/src/index.rs github.com",
-    "crates/horizon-mod-package/src/index/registry.rs github.com",
-    "crates/horizon-telemetry-server/src/github.rs api.github.com",
-    "crates/horizon-telemetry-server/src/github.rs github.com",
-    "crates/horizon-telemetry-server/src/lib.rs playhorizon.dev"
+    "crates/horizon-mod-package/src/index/registry.rs github.com"
   ]
 }

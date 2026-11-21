@@ -17,7 +17,6 @@ winresource = "0.1"
 
 [dependencies]
 horizon-guest-stack = { path = "../horizon-guest-stack" }
-horizon-cosmetics = { path = "../horizon-cosmetics" }
 horizon-hooks = { path = "../horizon-hooks" }
 horizon-mod-runtime = { path = "../horizon-mod-runtime" }
 mod_api = { package = "horizon-mod-vocab", path = "../horizon-mod-vocab" }
@@ -83,8 +82,7 @@ flate2 = { version = "1.1.10", default-features = false, features = ["zlib-rs", 
 horizon-theme = { path = "../horizon-theme" }
 # Machine and process probes for benchmark and dedicated-server performance reports.
 horizon-system = { path = "../horizon-system" }
-# Opt-in data collection: the game keeps, the launcher sends (docs/telemetry.md). The
-# anonymous "I'm playing" ping is the Horizon layer's (`horizon-heartbeat`, in the official executable).
+# Opt-in data collection: the game keeps, the launcher sends (docs/telemetry.md).
 horizon-telemetry = { path = "../horizon-telemetry", default-features = false }
 horizon-bench = { path = "../horizon-bench" }
 crc32fast = "1"

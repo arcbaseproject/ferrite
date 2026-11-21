@@ -2,7 +2,7 @@
 //! `[panel] bind` (127.0.0.1:8130 by default; a tailnet address to reach it from the owner's devices). It
 //! uses the control API's routes with a browser session instead of the token.
 //!
-//! - **Login.** `horizon-server panel` asks the API for a link with a one-time code, good for 10 minutes;
+//! - **Login.** `ferrite-server panel` asks the API for a link with a one-time code, good for 10 minutes;
 //!   opening it swaps the code for an `HttpOnly; SameSite=Strict` session cookie. Anyone who can read the
 //!   server folder's token can make a link, and no one else can. Sessions end when the supervisor does.
 //! - **Rebinding and CSRF.** The `Host` header must name the panel's own address (`localhost` too on
@@ -117,7 +117,7 @@ impl Auth {
             self.failures.push_back(Instant::now());
             return Err(page_error(
                 403,
-                "This login link was used already or has expired. Run `horizon-server panel` for a new one.",
+                "This login link was used already or has expired. Run `ferrite-server panel` for a new one.",
             ));
         };
         self.codes.remove(i);
@@ -277,11 +277,11 @@ fn handle(shared: &Arc<Shared>, address: SocketAddr, request: &Request) -> Respo
     if !shared.panel.lock().unwrap().signed_in(request) {
         return Response::error(
             401,
-            "sign in with a link from `horizon-server panel` on the server",
+            "sign in with a link from `ferrite-server panel` on the server",
         );
     }
     if path == "/api/v1/panel/login" {
-        return Response::error(403, "login links come from `horizon-server panel` only");
+        return Response::error(403, "login links come from `ferrite-server panel` only");
     }
     api::route(shared, request)
 }

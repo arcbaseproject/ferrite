@@ -73,7 +73,7 @@ fn exporters_write_to_their_log_file_without_a_console() {
 
 #[test]
 fn cli_keeps_redirected_stdout_and_stderr() {
-    let executable = env!("CARGO_BIN_EXE_horizon-launcher");
+    let executable = env!("CARGO_BIN_EXE_ferrite-launcher");
     let version = process::command(executable)
         .arg("--version")
         .output()
@@ -95,7 +95,7 @@ fn desktop_executable_uses_the_windows_gui_subsystem() {
     const SUBSYSTEM_OFFSET: usize = 68;
     const WINDOWS_GUI_SUBSYSTEM: u16 = 2;
 
-    let executable = fs::read(env!("CARGO_BIN_EXE_horizon-launcher")).unwrap();
+    let executable = fs::read(env!("CARGO_BIN_EXE_ferrite-launcher")).unwrap();
     let header = u32::from_le_bytes(
         executable[PE_HEADER_POINTER..PE_HEADER_POINTER + 4]
             .try_into()

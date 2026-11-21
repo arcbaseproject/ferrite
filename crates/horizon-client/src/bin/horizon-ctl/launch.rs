@@ -13,10 +13,16 @@ use std::{
 use horizon_client::logging::{data_dir, game_home};
 use serde_json::{Value, json};
 
+/// The game as releases ship it, then as cargo builds it.
 #[cfg(windows)]
-const CLIENT: &str = "horizon-client.exe";
+const CLIENTS: [&str; 2] = ["ferrite.exe", "horizon-client.exe"];
 #[cfg(not(windows))]
-const CLIENT: &str = "horizon-client";
+const CLIENTS: [&str; 2] = ["ferrite", "horizon-client"];
+
+/// The game in `dir`, under either name.
+fn game_in(dir: &Path) -> Option<PathBuf> {
+    CLIENTS.iter().map(|n| dir.join(n)).find(|p| p.is_file())
+}
 
 pub fn launcher_home() -> PathBuf {
     match std::env::var_os("HORIZON_LAUNCHER_HOME").filter(|h| !h.is_empty()) {
@@ -41,7 +47,7 @@ pub fn installed(versions: &Path) -> Vec<String> {
         .into_iter()
         .flatten()
         .flatten()
-        .filter(|e| e.path().join(".installed").exists() && e.path().join(CLIENT).exists())
+        .filter(|e| e.path().join(".installed").exists() && game_in(&e.path()).is_some())
         .filter_map(|e| e.file_name().into_string().ok())
         .collect();
     tags.sort_by_key(|t| std::cmp::Reverse(version_parts(t)));
@@ -84,7 +90,7 @@ pub fn find(
     let prepared = |dir: &Path, source, version| {
         let resources = prepared_resources(dir);
         Install {
-            game: dir.join(CLIENT),
+            game: game_in(dir).unwrap_or_else(|| dir.join(CLIENTS[0])),
             cwd: resources.as_ref().map(|_| game_home()),
             resources,
             source,
@@ -103,7 +109,7 @@ pub fn find(
     let versions = launcher.join("versions");
     if version.is_none()
         && let Some(dir) = beside
-        && dir.join(CLIENT).is_file()
+        && game_in(dir).is_some()
     {
         return Ok(prepared(dir, "beside horizon-ctl", None));
     }
@@ -284,7 +290,7 @@ mod tests {
     fn fake_version(versions: &Path, tag: &str, prepared: bool) -> PathBuf {
         let dir = versions.join(tag);
         std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(dir.join(CLIENT), "").unwrap();
+        std::fs::write(dir.join(CLIENTS[0]), "").unwrap();
         std::fs::write(dir.join(".installed"), "").unwrap();
         std::fs::write(
             dir.join("research-lock.json"),
@@ -330,7 +336,7 @@ mod tests {
         let home = temp("beside");
         fake_version(&home.join("versions"), "v2026.10.13", true);
         let build = temp("build");
-        std::fs::write(build.join(CLIENT), "").unwrap();
+        std::fs::write(build.join(CLIENTS[1]), "").unwrap();
         let install = find(None, None, Some(&build), &home).unwrap();
         assert_eq!(install.source, "beside horizon-ctl");
         assert_eq!((install.resources, install.cwd), (None, None));

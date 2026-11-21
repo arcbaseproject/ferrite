@@ -17,7 +17,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVICES = ["horizon-telemetry-server", "horizon-mod-registry"]
+SERVICES = ["horizon-mod-registry"]
 # The crate whose build script runs the mod API generator, and the generator's sources.
 VOCAB = "horizon-mod-vocab"
 GENERATOR = ROOT / "crates" / "horizon-mod-api-gen" / "src"
@@ -150,10 +150,6 @@ class ServiceImageTests(unittest.TestCase):
         self.assertIn("horizon-mod-registry", copied_crates(sample))
         self.assertNotIn("Cargo.toml", copied_crates(sample))
         self.assertNotIn("serde", path_packages(ROOT / "crates" / "horizon-mod-registry" / "Cargo.lock"))
-        # A Dockerfile that names its crates one by one copies only those.
-        telemetry = ROOT / "crates" / "horizon-telemetry-server" / "Dockerfile"
-        self.assertFalse(copies_every_crate(telemetry))
-        self.assertNotIn("horizon-client", copied_crates(telemetry))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-//! `horizon-server init`: the first run (docs/server.md, section 3). It asks about the EULA, the world, the
+//! `ferrite-server init`: the first run (docs/server.md, section 3). It asks about the EULA, the world, the
 //! port and who may join, imports an existing `server.properties`, finds the game, and writes `server.toml`.
 //! Every question has a flag, so it also runs unattended (Docker, scripts).
 
@@ -107,7 +107,7 @@ pub fn run(dir: &Path, answers: Answers) -> Result<(), String> {
     let toml_path = dir.join(config::FILE);
     if toml_path.exists() {
         return Err(format!(
-            "{} already exists: this server is set up. Edit it, or start the server with `horizon-server run`",
+            "{} already exists: this server is set up. Edit it, or start the server with `ferrite-server run`",
             toml_path.display()
         ));
     }
@@ -238,7 +238,7 @@ pub fn run(dir: &Path, answers: Answers) -> Result<(), String> {
 
     std::fs::write(&toml_path, config::render(&cfg)).map_err(|e| e.to_string())?;
     println!(
-        "Wrote {}. Start the server with: horizon-server run --dir {}",
+        "Wrote {}. Start the server with: ferrite-server run --dir {}",
         toml_path.display(),
         dir.display()
     );

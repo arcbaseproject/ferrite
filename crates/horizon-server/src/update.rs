@@ -1,4 +1,4 @@
-//! Updates and rollbacks (docs/server.md, section 7) for a `horizon-server` installed by install.sh or
+//! Updates and rollbacks (docs/server.md, section 7) for a `ferrite-server` installed by install.sh or
 //! install.ps1: each release in `<dir>/releases/<tag>`, `<dir>/current` pointing at the one in use, and
 //! `<dir>/previous` naming the one before it. An update downloads the current Nightly from GitHub (the only build
 //! Horizon ships since 2026-10-28; GitHub's latest release while there is none), checks it against the SHA-256 in
@@ -18,7 +18,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const REPO: &str = "horizon-rust/horizon";
+const REPO: &str = "arcbaseproject/ferrite";
 /// The release archives for this computer, most specific first: on Linux the server build (no ALSA or
 /// udev), else the full game (releases before the server build).
 fn assets_for(os: &str, arch: &str, musl: bool) -> &'static [&'static str] {
@@ -64,8 +64,8 @@ impl UpdateInstall for Install {
     /// Points `current` at the release `tag`, and remembers the one it pointed at as `previous`.
     fn switch(&self, tag: &str) -> Result<(), String> {
         let target = self.release(tag);
-        if !target.join(exe("horizon-server")).is_file() {
-            return Err(format!("{} holds no horizon-server", target.display()));
+        if !target.join(exe("ferrite-server")).is_file() {
+            return Err(format!("{} holds no ferrite-server", target.display()));
         }
         if let Some(old) = self.current().filter(|old| old != tag) {
             std::fs::write(self.root.join("previous"), format!("{old}\n"))
@@ -251,7 +251,7 @@ fn fetch(url: &str) -> Result<Vec<u8>, String> {
     let mut body = Vec::new();
     ureq::get(url)
         .set("Accept", "application/vnd.github+json")
-        .set("User-Agent", "horizon-server")
+        .set("User-Agent", "ferrite-server")
         .call()
         .map_err(|e| match e {
             ureq::Error::Status(404, _) => "404".to_string(),
@@ -283,7 +283,7 @@ pub fn release(tag: Option<&str>) -> Result<Release, String> {
         _ => e,
     })?;
     let json = serde_json::from_slice(&text).map_err(|e| format!("GitHub's answer: {e}"))?;
-    pick(&json, fetch, &horizon_release_sign::trusted_keys())
+    pick(&json, fetch, &horizon_release_sign::trusted_keys_for(REPO))
 }
 
 /// The archive for this computer in a release's JSON, with the SHA-256 the release's SHA256SUMS
@@ -472,7 +472,7 @@ pub fn download(install: &Install, release: &Release) -> Result<PathBuf, String>
     let part = folder.join(format!("{}.part", release.asset));
     let result = (|| {
         let mut reader = ureq::get(&release.url)
-            .set("User-Agent", "horizon-server")
+            .set("User-Agent", "ferrite-server")
             .call()
             .map_err(|e| format!("downloading {}: {e}", release.asset))?
             .into_reader();
@@ -557,12 +557,12 @@ pub fn unpack(install: &Install, archive: &Path, tag: &str) -> Result<PathBuf, S
                 archive.display()
             ));
         }
-        let source = find_program(&scratch, &exe("horizon-server"))
+        let source = find_program(&scratch, &exe("ferrite-server"))
             .and_then(|p| p.parent().map(Path::to_path_buf))
-            .ok_or_else(|| format!("{} holds no horizon-server", archive.display()))?;
+            .ok_or_else(|| format!("{} holds no ferrite-server", archive.display()))?;
         #[cfg(unix)]
         for name in [
-            "horizon-server",
+            "ferrite-server",
             "horizon-engine",
             "horizon-client",
             "horizon-prepare",
@@ -672,7 +672,7 @@ pub fn command(dir: &Path, args: &[String]) -> Result<(), String> {
             if check {
                 if update_available(&release.tag, &current) {
                     println!(
-                        "Horizon {} is out; this server runs {current}. `horizon-server update` installs it.",
+                        "Horizon {} is out; this server runs {current}. `ferrite-server update` installs it.",
                         release.tag
                     );
                 } else {
@@ -755,7 +755,7 @@ fn switch_to(dir: &Path, install: &Install, tag: &str, timeout: Duration) -> Res
         )
         .map_err(|e| {
             if e == "no such endpoint" {
-                "the running server is older than updates: stop it, then run `horizon-server update` again".into()
+                "the running server is older than updates: stop it, then run `ferrite-server update` again".into()
             } else {
                 e
             }
@@ -795,7 +795,7 @@ fn switch_to(dir: &Path, install: &Install, tag: &str, timeout: Duration) -> Res
         if Instant::now() > deadline {
             println!();
             return Err(
-                "no word from the server about the update; `horizon-server logs` shows where it is"
+                "no word from the server about the update; `ferrite-server logs` shows where it is"
                     .into(),
             );
         }
@@ -837,9 +837,9 @@ fn switch_stopped(dir: &Path, install: &Install, tag: &str) -> Result<(), String
         return Err(format!("stayed on {from}: {e}"));
     }
     println!(
-        "Switched from {from} to {tag}.{backed_up}{} `horizon-server rollback` goes back to {from}.",
+        "Switched from {from} to {tag}.{backed_up}{} `ferrite-server rollback` goes back to {from}.",
         if server {
-            " The server is stopped: `horizon-server start` runs the new version."
+            " The server is stopped: `ferrite-server start` runs the new version."
         } else {
             ""
         }
@@ -914,7 +914,7 @@ mod tests {
         for tag in tags {
             let release = root.join("releases").join(tag);
             std::fs::create_dir_all(&release).unwrap();
-            std::fs::write(release.join("horizon-server"), tag).unwrap();
+            std::fs::write(release.join("ferrite-server"), tag).unwrap();
         }
         std::os::unix::fs::symlink(root.join("releases").join(tags[0]), root.join("current"))
             .unwrap();
@@ -934,17 +934,17 @@ mod tests {
         for tag in ["v1", "v2", "v%3"] {
             let release = root.join("releases").join(tag);
             std::fs::create_dir_all(&release).unwrap();
-            std::fs::write(release.join(exe("horizon-server")), tag).unwrap();
+            std::fs::write(release.join(exe("ferrite-server")), tag).unwrap();
         }
         let install = Install { root: root.clone() };
-        let running = root.join("current").join(exe("horizon-server"));
+        let running = root.join("current").join(exe("ferrite-server"));
         install.switch("v1").unwrap();
         assert_eq!(std::fs::read_to_string(&running).unwrap(), "v1");
         install.switch("v2").unwrap();
         assert_eq!(std::fs::read_to_string(&running).unwrap(), "v2");
         assert!(root.join("current.switching").symlink_metadata().is_err());
         // Replacing the junction never touched the release it pointed at.
-        let v1 = root.join("releases").join("v1").join(exe("horizon-server"));
+        let v1 = root.join("releases").join("v1").join(exe("ferrite-server"));
         assert_eq!(std::fs::read_to_string(v1).unwrap(), "v1");
         // `%` keeps a meaning inside cmd's quotes: refused, and `current` stays where it was.
         let refused = install.switch("v%3").unwrap_err();
@@ -1197,10 +1197,10 @@ mod tests {
     #[test]
     fn switching_keeps_the_previous_release() {
         let install = installed("switch", &["v1", "v2"]);
-        let exe = install.root.join("current/horizon-server");
+        let exe = install.root.join("current/ferrite-server");
         assert_eq!(Install::around(&exe), Some(install.clone()));
         assert_eq!(
-            Install::around(&install.release("v2").join("horizon-server")),
+            Install::around(&install.release("v2").join("ferrite-server")),
             Some(install.clone())
         );
         assert_eq!(install.current().as_deref(), Some("v1"));
@@ -1225,7 +1225,7 @@ mod tests {
             install
                 .switch("v3")
                 .unwrap_err()
-                .contains("no horizon-server")
+                .contains("no ferrite-server")
         );
         assert_eq!(install.current().as_deref(), Some("v1"));
         std::fs::remove_dir_all(&install.root).unwrap();
@@ -1292,7 +1292,7 @@ mod tests {
         let source = scratch("unpack-source");
         let inner = source.join("horizon-v2");
         std::fs::create_dir_all(&inner).unwrap();
-        std::fs::write(inner.join("horizon-server"), "v2").unwrap();
+        std::fs::write(inner.join("ferrite-server"), "v2").unwrap();
         std::fs::write(inner.join("horizon-engine"), "engine").unwrap();
         let archive = source.join("horizon-server-linux-x86_64.tar.gz");
         let status = std::process::Command::new("tar")
@@ -1338,7 +1338,7 @@ mod tests {
         assert!(
             unpack(&install, &empty, "v3")
                 .unwrap_err()
-                .contains("holds no horizon-server")
+                .contains("holds no ferrite-server")
         );
         assert!(!install.release("v3").exists());
         std::fs::remove_dir_all(&install.root).unwrap();

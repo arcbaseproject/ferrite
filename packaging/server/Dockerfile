@@ -11,14 +11,14 @@
 #
 # HORIZON_EULA=true accepts the Minecraft EULA (https://aka.ms/MinecraftEULA) for this server. The first
 # start writes /data/server.toml from HORIZON_* (EULA, WORLD, SEED, PORT, WHITELIST, PLAYERS, OP); later
-# starts use the file. Manage it with `docker exec horizon horizon-server status|cmd|backup|logs ...`.
+# starts use the file. Manage it with `docker exec horizon ferrite-server status|cmd|backup|logs ...`.
 FROM rust:1-slim-bookworm AS build
 WORKDIR /src
 COPY . .
 # The server build of the game (no sound, no controllers: it needs neither ALSA nor udev) as horizon-engine.
 RUN cargo build --release --locked -p horizon-game --no-default-features --bin horizon-client \
     && cargo build --release --locked -p horizon-server --bin horizon-server \
-    && mkdir /out && cp target/release/horizon-client /out/horizon-engine && cp target/release/horizon-server /out/
+    && mkdir /out && cp target/release/horizon-client /out/horizon-engine && cp target/release/horizon-server /out/ferrite-server
 
 FROM debian:bookworm-slim
 RUN useradd --system --home-dir /data --shell /usr/sbin/nologin horizon \
@@ -32,4 +32,4 @@ VOLUME /data
 EXPOSE 25565
 USER horizon
 # SIGTERM makes horizon-server stop the game cleanly (it saves first): give it --stop-timeout 180.
-CMD ["sh", "-c", "test -f server.toml || horizon-server init --yes || exit 1; exec horizon-server run"]
+CMD ["sh", "-c", "test -f server.toml || ferrite-server init --yes || exit 1; exec ferrite-server run"]

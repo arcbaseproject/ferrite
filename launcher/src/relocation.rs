@@ -141,7 +141,7 @@ fn ensure_idle(source: &Roots) -> Result<(), String> {
         let managed = roots.iter().any(|root| command.contains(root));
         if matches!(
             name,
-            "horizon-client" | "horizon-server" | "horizon-prepare"
+            "ferrite" | "horizon-client" | "horizon-server" | "ferrite-server" | "horizon-prepare"
         ) || (managed
             && matches!(
                 name,

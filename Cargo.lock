@@ -1834,7 +1834,6 @@ dependencies = [
  "horizon-client-render",
  "horizon-command",
  "horizon-core",
- "horizon-cosmetics",
  "horizon-dualsense",
  "horizon-engine-slots",
  "horizon-friends",
@@ -2080,19 +2079,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "horizon-cosmetics"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "glam",
- "horizon-addresses",
- "png",
- "serde",
- "serde_json",
- "ureq",
-]
-
-[[package]]
 name = "horizon-discord"
 version = "0.1.0"
 dependencies = [
@@ -2199,15 +2185,6 @@ dependencies = [
  "wayland-client",
  "wayland-protocols",
  "wgpu",
-]
-
-[[package]]
-name = "horizon-heartbeat"
-version = "0.1.0"
-dependencies = [
- "horizon-platform",
- "horizon-telemetry",
- "log",
 ]
 
 [[package]]
@@ -2564,21 +2541,9 @@ dependencies = [
  "horizon-discord",
  "horizon-friends",
  "horizon-game",
- "horizon-heartbeat",
- "horizon-official-servers",
- "horizon-perf-share",
  "horizon-platform",
  "log",
  "winresource",
-]
-
-[[package]]
-name = "horizon-official-servers"
-version = "0.1.0"
-dependencies = [
- "horizon-addresses",
- "horizon-platform",
- "log",
 ]
 
 [[package]]
@@ -2600,7 +2565,6 @@ dependencies = [
  "flate2",
  "horizon-bench",
  "horizon-perf-format",
- "horizon-perf-share",
  "prost",
  "regex",
  "serde",
@@ -2616,21 +2580,6 @@ dependencies = [
  "prost-build",
  "prost-types",
  "protox",
-]
-
-[[package]]
-name = "horizon-perf-share"
-version = "0.1.0"
-dependencies = [
- "getrandom 0.3.4",
- "horizon-addresses",
- "horizon-platform",
- "log",
- "open",
- "serde",
- "serde_json",
- "ureq",
- "url",
 ]
 
 [[package]]

@@ -65,5 +65,8 @@ pub(super) fn compile(
     for &index in &resolution.order {
         installed.push(rlibs[projects[index].bundle.manifest.id.as_str()].clone());
     }
-    Ok((runtime.join(BIN).join(crate::backend::CLIENT), installed))
+    Ok((
+        runtime.join(BIN).join(crate::backend::BUILT_CLIENT),
+        installed,
+    ))
 }

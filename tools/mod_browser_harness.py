@@ -17,7 +17,7 @@ It also times the install and the world's load with the mod against the same wor
 (a ported mod must not slow a game that doesn't use it; this measures what one that does costs).
 Prints one JSON line per step and a summary; exits 1 when a step fails.
 
-Needs the launcher (launcher/target/debug/horizon-launcher, built with
+Needs the launcher (launcher/target/debug/ferrite-launcher, built with
 `--features gpui_platform/runtime_shaders` on macOS), the game and horizon-ctl
 (target/fast/horizon-client, target/fast/horizon-ctl, or --bin DIR) and the prepared resources in
 .local/horizon-client/26.3. Downloads from Modrinth.
@@ -164,7 +164,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--mod", default="macaws-fences-and-walls", help="Modrinth slug of a Works or Partly mod")
     ap.add_argument("--query", default="macaw", help="the search text that finds it")
-    ap.add_argument("--launcher", default=str(ROOT / "launcher/target/debug/horizon-launcher"))
+    ap.add_argument("--launcher", default=str(ROOT / "launcher/target/debug/ferrite-launcher"))
     ap.add_argument("--bin", default=str(ROOT / "target/fast"), help="folder with horizon-client and horizon-ctl")
     ap.add_argument("--resources", default=str(ROOT / ".local/horizon-client/26.3"))
     ap.add_argument("--keep", action="store_true", help="keep the scratch game folder")

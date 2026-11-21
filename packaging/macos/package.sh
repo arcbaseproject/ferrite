@@ -32,8 +32,8 @@ app=$out/Horizon.app
 
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-cp "$binary" "$app/Contents/MacOS/horizon-launcher"
-chmod 755 "$app/Contents/MacOS/horizon-launcher"
+cp "$binary" "$app/Contents/MacOS/ferrite-launcher"
+chmod 755 "$app/Contents/MacOS/ferrite-launcher"
 cp "$here/../icons/horizon.icns" "$app/Contents/Resources/horizon.icns"
 sed "s/@VERSION@/$version/g" "$here/Info.plist" > "$app/Contents/Info.plist"
 printf 'APPL????' > "$app/Contents/PkgInfo"
@@ -49,7 +49,7 @@ else
 fi
 codesign --verify --strict --verbose=2 "$app"
 # Still starts under the hardened runtime.
-"$app/Contents/MacOS/horizon-launcher" --version
+"$app/Contents/MacOS/ferrite-launcher" --version
 notarize=$([[ "$identity" != "-" && -n "${MACOS_NOTARY_PROFILE:-}" ]] && echo yes || true)
 # The app first, so the zip and the .dmg both carry it stapled.
 [[ -z "$notarize" ]] || "$here/notarize.sh" "$app"

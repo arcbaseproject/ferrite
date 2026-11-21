@@ -68,7 +68,8 @@ pub fn build_digest(
     keys: &[PublicKey],
     fetch: impl Fn(&str) -> Result<Option<Vec<u8>>, String>,
 ) -> Result<String, String> {
-    let channel = Channel::of(tag).ok_or_else(|| format!("{tag} is not a Horizon release."))?;
+    let channel = Channel::of(tag)
+        .ok_or_else(|| crate::i18n::trf("{tag} is not a Horizon release.", &[("tag", tag)]))?;
     let sums = fetch(&asset_url(tag, SUMS))?;
     let signature = fetch(&asset_url(tag, SIGNATURE_V2))?
         .map(|bytes| String::from_utf8_lossy(&bytes).into_owned());

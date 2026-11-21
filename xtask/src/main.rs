@@ -372,8 +372,10 @@ fn sdk_index(dist: &Path, commit: &str, date: &str, options: &[String]) -> Resul
 fn package(binary: &Path, out: &Path) -> Result<(), String> {
     preflight("package", binary)?;
     let repo = new_folder(out)?;
-    copy_into(binary, out)?;
+    // Ferrite ships the game as `ferrite`, whatever cargo named the build.
+    copy(binary, &out.join(program_name(binary, "ferrite")))?;
     copy_runtime("package", binary, out)?;
+    ship_server_as_ferrite(binary, out)?;
     copy_exporters(&repo.join("exporters"), &out.join("exporters"))?;
     let play = repo.join("packaging/PLAY.txt");
     copy(&play, &out.join("PLAY.txt"))
@@ -384,7 +386,15 @@ fn package_server(engine: &Path, out: &Path) -> Result<(), String> {
     let repo = new_folder(out)?;
     copy_exporters(&repo.join("exporters"), &out.join("exporters"))?;
     copy(engine, &out.join(program_name(engine, "horizon-engine")))?;
-    copy_runtime("package-server", engine, out)
+    copy_runtime("package-server", engine, out)?;
+    ship_server_as_ferrite(engine, out)
+}
+
+/// Ferrite ships the server supervisor (cargo's `horizon-server`) as `ferrite-server`.
+fn ship_server_as_ferrite(program: &Path, out: &Path) -> Result<(), String> {
+    let from = out.join(program_name(program, "horizon-server"));
+    let to = out.join(program_name(program, "ferrite-server"));
+    fs::rename(&from, &to).map_err(|e| format!("{}: {e}", from.display()))
 }
 
 /// Every required input of `route` (the SDK's one list) is there before anything is emptied,

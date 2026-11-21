@@ -2,7 +2,7 @@
 Type=Application
 Name=Horizon
 Comment=Minecraft: Java Edition 26.3, rewritten in Rust
-Exec=horizon-client
+Exec=ferrite
 Icon=horizon
 Terminal=false
 Categories=Game;

@@ -1,4 +1,4 @@
-//! `horizon-server import-resources DIR`: puts a folder of prepared game files (made on the owner's own
+//! `ferrite-server import-resources DIR`: puts a folder of prepared game files (made on the owner's own
 //! computer by the launcher or `horizon-prepare`) where the server reads them, so a headless machine
 //! without Java needs no `prepare`. docs/server.md, section "Game files".
 //!
@@ -47,7 +47,7 @@ pub fn command(dir: &Path, args: &[String]) -> Result<(), String> {
     import(Path::new(source), &target, &mut || Ok(()))?;
     println!("Imported the game files into {}", target.display());
     println!(
-        "Next: `horizon-server start` (or `horizon-server restart` if it is running) to start on them."
+        "Next: `ferrite-server start` (or `ferrite-server restart` if it is running) to start on them."
     );
     Ok(())
 }

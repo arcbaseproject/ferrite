@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::Command;
 
 fn desktop_entry(home: &Path, wrapper: Option<&str>, args: &[&str]) {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_horizon-launcher"));
+    let mut command = Command::new(env!("CARGO_BIN_EXE_ferrite-launcher"));
     command
         .arg("desktop-entry")
         .args(args)
@@ -41,7 +41,7 @@ fn menu_registration_preserves_the_package_wrapper() {
     let original = std::fs::read_to_string(&entry).unwrap();
     assert!(original.contains(&format!(
         "Exec=\"{}\"\n",
-        env!("CARGO_BIN_EXE_horizon-launcher")
+        env!("CARGO_BIN_EXE_ferrite-launcher")
     )));
 
     let wrapper = "/usr/bin/horizon-launcher";

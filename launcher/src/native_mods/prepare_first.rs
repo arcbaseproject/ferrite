@@ -290,6 +290,6 @@ mod tests {
         assert_eq!(String::from(failed()), crate::backend::prepare_hint("v0"));
         // The window never names a command.
         let window = failed().said(crate::native_mods::Caller::Window);
-        assert!(!window.contains("horizon-launcher"), "{window}");
+        assert!(!window.contains("ferrite-launcher"), "{window}");
     }
 }

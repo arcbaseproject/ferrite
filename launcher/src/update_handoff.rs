@@ -397,7 +397,7 @@ mod tests {
     fn the_installer_reads_the_command_line_the_window_gives_it() {
         let window = os(&["--restart", "play"]);
         let cmd = installer_command(
-            Path::new("horizon-launcher"),
+            Path::new("ferrite-launcher"),
             &staged(),
             true,
             false,
@@ -469,14 +469,14 @@ mod tests {
         assert_eq!(env_of(&installer(true), MIN_RESTARTED_ENV), marked);
         assert_eq!(env_of(&installer(false), MIN_RESTARTED_ENV), None);
 
-        let restart = restart_command(Path::new("horizon-launcher"), os(&["play"]), true);
+        let restart = restart_command(Path::new("ferrite-launcher"), os(&["play"]), true);
         assert_eq!(env_of(&restart, MIN_RESTARTED_ENV), marked);
         assert_eq!(env_of(&restart, SHA256_ENV), Some(None));
         assert_eq!(
             restart.get_args().collect::<Vec<_>>(),
             [std::ffi::OsStr::new("play")]
         );
-        let plain = restart_command(Path::new("horizon-launcher"), os(&["play"]), false);
+        let plain = restart_command(Path::new("ferrite-launcher"), os(&["play"]), false);
         assert_eq!(env_of(&plain, MIN_RESTARTED_ENV), None);
     }
 
@@ -508,12 +508,12 @@ mod tests {
         header.set_size(NEW_LAUNCHER.len() as u64);
         header.set_mode(0o755);
         header.set_cksum();
-        tar.append_data(&mut header, "top/horizon-launcher", NEW_LAUNCHER)
+        tar.append_data(&mut header, "top/ferrite-launcher", NEW_LAUNCHER)
             .unwrap();
         let archive = tar.into_inner().unwrap().finish().unwrap();
         fs::write(stage.join("download.tar.gz"), &archive).unwrap();
 
-        let payload = stage.join("unpacked").join("top").join("horizon-launcher");
+        let payload = stage.join("unpacked").join("top").join("ferrite-launcher");
         fs::create_dir_all(payload.parent().unwrap()).unwrap();
         fs::write(&payload, NEW_LAUNCHER).unwrap();
         let staged = Staged {
@@ -684,7 +684,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("horizon-cleanup-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
-        let name = "horizon-launcher.exe";
+        let name = "ferrite-launcher.exe";
         let lock = backend::update_lock_file(&dir.join(name));
         let aside = [format!("{name}.old-7-0"), format!("{name}.update-7")];
         for file in &aside {

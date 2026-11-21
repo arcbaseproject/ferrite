@@ -14,8 +14,8 @@ pub const BODY_PARTS: [&str; 6] = [
     "left_leg",
 ];
 
-/// A pose a crate lays over a player model's body after its vanilla animation (Horizon's emotes,
-/// docs/cosmetics.md), handed to the model with [`PlayerModels::set_body_pose`]. The crate
+/// A pose a crate lays over a player model's body after its vanilla animation (emotes),
+/// handed to the model with [`PlayerModels::set_body_pose`]. The crate
 /// downcasts its own back through [`std::any::Any`].
 pub trait BodyPose: std::any::Any + std::fmt::Debug + Send + Sync {
     /// Poses the [`BODY_PARTS`] at `age` (the model's ticks): `at_rest` holds each part before the

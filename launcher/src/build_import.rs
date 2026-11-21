@@ -9,7 +9,7 @@
 //! Nothing signed it: the Versions page says so. Its tag (`imported-<date>-<sha>`) is no
 //! release's, so no update replaces it, prunes it or moves the selection off it.
 
-use crate::backend::{self, CLIENT};
+use crate::backend::{self, BUILT_CLIENT, CLIENT};
 use crate::i18n::{tr, trf};
 use crate::native_mods::{self, Target};
 use horizon_port_pack::zip_intake::{self, Archive};
@@ -159,7 +159,13 @@ fn read_program(path: &Path, file: &str) -> Result<Vec<u8>, String> {
         Ok(zip) => zip,
         // A download cut short, say.
         Err(e) if lower.ends_with(".zip") => return Err(format!("{file}: {e}")),
-        Err(_) if !lower.starts_with("horizon-client") => return Err(not_a_game(file)),
+        // `ferrite`, `ferrite (1)`, `ferrite.exe`, but never `ferrite-launcher`.
+        Err(_)
+            if !(lower.starts_with("ferrite") && !lower.starts_with("ferrite-"))
+                && !lower.starts_with("horizon-client") =>
+        {
+            return Err(not_a_game(file));
+        }
         Err(_) => return read_at_most(open()?, file),
     };
     from_zip(zip, file, true)
@@ -188,7 +194,7 @@ fn from_zip<R: Read + Seek>(
         if !entry.is_file() {
             continue;
         }
-        if name == CLIENT {
+        if name == CLIENT || name == BUILT_CLIENT {
             return read_at_most(entry, file);
         }
         if nested
@@ -217,9 +223,11 @@ fn from_tar(from: impl Read, file: &str) -> Result<Vec<u8>, String> {
     let mut tar = tar::Archive::new(flate2::read::GzDecoder::new(from));
     for entry in tar.entries().map_err(|e| format!("{file}: {e}"))? {
         let entry = entry.map_err(|e| format!("{file}: {e}"))?;
-        let named = entry
-            .path()
-            .is_ok_and(|p| p.file_name() == Some(std::ffi::OsStr::new(CLIENT)));
+        let named = entry.path().is_ok_and(|p| {
+            let name = p.file_name();
+            name == Some(std::ffi::OsStr::new(CLIENT))
+                || name == Some(std::ffi::OsStr::new(BUILT_CLIENT))
+        });
         if named && entry.header().entry_type().is_file() {
             return read_at_most(entry, file);
         }
@@ -533,9 +541,9 @@ mod tests {
         fs::write(&plain, program(b"plain")).unwrap();
         assert_eq!(read_program(&plain, name).unwrap(), program(b"plain"));
         // Even a marked program under another executable's name is refused.
-        let launcher = d.join("horizon-launcher");
+        let launcher = d.join("ferrite-launcher");
         fs::write(&launcher, program(b"launcher")).unwrap();
-        assert!(read_program(&launcher, "horizon-launcher").is_err());
+        assert!(read_program(&launcher, "ferrite-launcher").is_err());
         let empty = d.join("empty.zip");
         let mut zip = zip::ZipWriter::new(fs::File::create(&empty).unwrap());
         zip.start_file("README.md", options).unwrap();

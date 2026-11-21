@@ -21,13 +21,13 @@ check() {  # name, expected exit (0 or 1), output grep (may be empty), then the 
   else echo "FAIL $name (exit $rc, wanted $want, pattern '$pat')"; sed 's/^/     /' "$out"; fails=$((fails+1)); fi
 }
 
-# A fake release: an archive holding horizon-server, signed for TAG with a throwaway key. A Nightly (TAG nightly)
+# A fake release: an archive holding ferrite-server, signed for TAG with a throwaway key. A Nightly (TAG nightly)
 # is also signed for its own version ALSO (nightly-<date>-<commit>) in SHA256SUMS.v2.sig, titled as
 # nightly-build.yml titles it.
 make_release() {  # dir tag [also]
   local d=$1 tag=$2 also=${3:-}
   mkdir -p "$d/src/horizon-server-x" "$d/files"
-  printf '#!/bin/sh\necho fake\n' > "$d/src/horizon-server-x/horizon-server"; chmod +x "$d/src/horizon-server-x/horizon-server"
+  printf '#!/bin/sh\necho fake\n' > "$d/src/horizon-server-x/ferrite-server"; chmod +x "$d/src/horizon-server-x/ferrite-server"
   tar -czf "$d/files/horizon-server-linux-x86_64.tar.gz" -C "$d/src" horizon-server-x
   ALSO_FOR=$also EPHEMERAL=yes bash "$root/tools/ci/sign_release.sh" "$tag" "$d/files/horizon-server-linux-x86_64.tar.gz" > /dev/null
   json "$d" "$tag" yes "$(title "$tag" "$also")"
@@ -100,7 +100,7 @@ P=$W/ssl:/usr/bin:/bin
 NIGHTLY=nightly-2026-11-03-0c02067
 d=$W/good; make_release "$d" nightly "$NIGHTLY"; with_key "$d"
 run "$d" "$P"; verdict "good signature installs (Nightly, signed for its own version)" 0 "Release signature OK" "$d"
-[ -x "$d/inst/current/horizon-server" ] || { echo "FAIL nothing installed"; fails=$((fails+1)); }
+[ -x "$d/inst/current/ferrite-server" ] || { echo "FAIL nothing installed"; fails=$((fails+1)); }
 grep -q "Downloading Horizon $NIGHTLY " "$d/out" || { echo "FAIL not installed as $NIGHTLY"; fails=$((fails+1)); }
 
 # 1b. A Nightly with only the channel's signature (published before v2): refused, never the channel's signature.

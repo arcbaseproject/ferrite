@@ -36,7 +36,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 #[derive(Parser)]
 #[command(
-    name = "horizon-launcher",
+    name = "ferrite-launcher",
     version = backend::VERSION,
     about = "Installs, prepares and starts Horizon. Without a subcommand, opens the window."
 )]
@@ -626,7 +626,7 @@ enum Cmd {
         after_help = "The program must match this computer's executable format and carry the exact `horizon-game-executable;`\nidentity signature embedded by ordinary and launcher-generated games. It carries no mod API level or build id,\nand is not a signature of authenticity. Unmarked programs are refused."
     )]
     ImportBuild {
-        /// The program (horizon-client, horizon-client.exe on Windows), or a zip holding it
+        /// The program (ferrite or horizon-client, with .exe on Windows), or a zip holding it
         path: PathBuf,
         /// The installed base whose game files it plays with (default: the selected usable
         /// base, else the newest release or Nightly; developer bases need explicit selection)
@@ -1094,7 +1094,7 @@ fn execute(command: Cmd, as_json: bool) -> Result<i32, String> {
             clap_complete::generate(
                 shell,
                 &mut self::command(),
-                "horizon-launcher",
+                "ferrite-launcher",
                 &mut std::io::stdout(),
             );
         }
@@ -3396,18 +3396,18 @@ mod tests {
             clap_complete::Shell::PowerShell,
         ] {
             let shell_name = shell.to_string();
-            let args = ["horizon-launcher", "completions", shell_name.as_str()].map(str::to_owned);
+            let args = ["ferrite-launcher", "completions", shell_name.as_str()].map(str::to_owned);
             let cli = Cli::try_parse_from(args).unwrap();
             assert!(matches!(cli.command, Some(Cmd::Completions { .. })));
             let mut output = Vec::new();
-            clap_complete::generate(shell, &mut command(), "horizon-launcher", &mut output);
+            clap_complete::generate(shell, &mut command(), "ferrite-launcher", &mut output);
             let script = String::from_utf8(output).unwrap();
-            assert!(script.contains("horizon-launcher"));
+            assert!(script.contains("ferrite-launcher"));
             assert!(script.contains("versions"));
             assert!(script.contains("multiplayer"));
         }
-        assert!(Cli::try_parse_from(["horizon-launcher", "completions"]).is_err());
-        assert!(Cli::try_parse_from(["horizon-launcher", "completions", "unknown"]).is_err());
+        assert!(Cli::try_parse_from(["ferrite-launcher", "completions"]).is_err());
+        assert!(Cli::try_parse_from(["ferrite-launcher", "completions", "unknown"]).is_err());
     }
 
     #[test]
@@ -3428,7 +3428,7 @@ mod tests {
 
     #[test]
     fn play_takes_an_account_for_one_launch() {
-        let cli = Cli::try_parse_from(["horizon-launcher", "play", "--account", "Alex"]).unwrap();
+        let cli = Cli::try_parse_from(["ferrite-launcher", "play", "--account", "Alex"]).unwrap();
         match cli.command {
             Some(Cmd::Play { account, .. }) => assert_eq!(account.as_deref(), Some("Alex")),
             _ => panic!("not play"),
@@ -3438,7 +3438,7 @@ mod tests {
     #[test]
     fn play_takes_extra_arguments_that_start_with_hyphens() {
         let cli = Cli::try_parse_from([
-            "horizon-launcher",
+            "ferrite-launcher",
             "play",
             "--arg",
             "--server-thread",
@@ -3455,7 +3455,7 @@ mod tests {
     #[test]
     fn game_args_takes_one_line_that_starts_with_hyphens() {
         let cli = Cli::try_parse_from([
-            "horizon-launcher",
+            "ferrite-launcher",
             "game-args",
             "--server-thread --render-distance 40",
         ])
@@ -3483,7 +3483,7 @@ mod tests {
     #[test]
     fn mods_commands_name_their_instance() {
         let parse = |args: &[&str]| {
-            let cli = Cli::try_parse_from([&["horizon-launcher", "mods"], args].concat()).unwrap();
+            let cli = Cli::try_parse_from([&["ferrite-launcher", "mods"], args].concat()).unwrap();
             match cli.command {
                 Some(Cmd::Mods { action }) => action,
                 _ => panic!("expected mods"),
@@ -3537,7 +3537,7 @@ mod tests {
             Some(ModsCmd::Search { instance: Some(i), .. }) if i == "A"
         ));
         assert!(
-            Cli::try_parse_from(["horizon-launcher", "mods", "check", "x", "--instance", "A"])
+            Cli::try_parse_from(["ferrite-launcher", "mods", "check", "x", "--instance", "A"])
                 .is_err()
         );
     }
@@ -3547,7 +3547,7 @@ mod tests {
         let parse = |args: &[&str]| {
             Cli::try_parse_from(
                 [
-                    &["horizon-launcher", "native-build", "--sync-internals"],
+                    &["ferrite-launcher", "native-build", "--sync-internals"],
                     args,
                 ]
                 .concat(),
@@ -3576,7 +3576,7 @@ mod tests {
         let parse = |args: &[&str]| {
             Cli::try_parse_from(
                 [
-                    &["horizon-launcher", "native-build", "--trust-native-code"],
+                    &["ferrite-launcher", "native-build", "--trust-native-code"],
                     args,
                 ]
                 .concat(),

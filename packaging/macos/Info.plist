@@ -8,7 +8,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>Horizon</string>
 	<key>CFBundleExecutable</key>
-	<string>horizon-launcher</string>
+	<string>ferrite-launcher</string>
 	<key>CFBundleIconFile</key>
 	<string>horizon</string>
 	<key>CFBundleIdentifier</key>
